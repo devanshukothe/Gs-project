@@ -29,7 +29,7 @@ function App() {
           element={user ? <StudentDashboard /> : <Navigate to="/unauthorized" />}
         />
         <Route
-          path="/FacultyDashboard"
+          path="/faculty"
           element={user ? <FacultyDashboard /> : <Navigate to="/unauthorized" />}
         />
         <Route
