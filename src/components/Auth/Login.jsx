@@ -21,9 +21,9 @@ const Login = () => {
       // Sign in with Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+      
       // Fetch user role from Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userDoc = await getDoc(doc(db, 'Club', user.uid));
       if (!userDoc.exists()) {
         throw new Error('User data not found!');
       }
@@ -31,7 +31,7 @@ const Login = () => {
       const { role } = userDoc.data();
 
       // Redirect based on role
-      if (role === 'student') {
+      if (role === 'IC' || role==="DC") {
         navigate('/student');
       } else if (role === 'faculty') {
         navigate('/faculty');

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react
 
 import Home from './pages/Home';
 import Unauthorized from './pages/Unauthorized';
-import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import StudentDashboard from "./components/Dashboard/StudentDashboard";
 import FacultyDashboard from "./components/Dashboard/FacultyDashboard";
@@ -12,9 +11,10 @@ import DeanDashboard from "./components/Dashboard/DeanDashboard";
 
 import { useAuth } from './contexts/AuthContext';  // Updated import path
 import { Navigate } from 'react-router-dom';  // Import Navigate from react-router-dom
+import Login from './components/Auth/Login';
 
 function App() {
-  const { user } = useAuth();
+  const { user } = useAuth();  
   return (
     <Router>
       <Routes>
