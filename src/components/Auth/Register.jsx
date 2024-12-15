@@ -191,12 +191,13 @@ const Register = () => {
         <select value={role} onChange={(e) => setRole(e.target.value)}>
           <option value="none">Select Role</option>
           <option value="IC">Institute Club</option>
-          <option value="DC">Departmental Club</option>
+          <option value="DC">Departmental Club</option> 
           <option value="Faculty">Faculty Coordinator</option>
           <option value="Dean">Dean of Student Activities</option>
           <option value="GS">General Secretary</option>
           <option value="TS">Technical Secretary</option>
           <option value="SS">Sports Secretary</option>
+          <option value="CS">Cultural Secretary</option>
         </select>
       ) : (
         ""
