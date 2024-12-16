@@ -8,13 +8,13 @@ import Register from "./components/Auth/Register";
 import StudentDashboard from "./components/Dashboard/StudentDashboard";
 import FacultyDashboard from "./components/Dashboard/FacultyDashboard";
 import DeanDashboard from "./components/Dashboard/DeanDashboard";
-
 import { useAuth } from './contexts/AuthContext';  // Updated import path
 import { Navigate } from 'react-router-dom';  // Import Navigate from react-router-dom
 import Login from './components/Auth/Login';
+import SecretaryDashboard from './components/Dashboard/SecretaryDashboard';
 
 function App() {
-  const { user } = useAuth();  
+  // const { user } = useAuth();  
   return (
     <Router>
       <Routes>
@@ -26,16 +26,17 @@ function App() {
         {/* Protected Routes */}
         <Route
           path="/student"
-          element={user ? <StudentDashboard /> : <Navigate to="/unauthorized" />}
+          element={<StudentDashboard /> }
         />
         <Route
           path="/faculty"
-          element={user ? <FacultyDashboard /> : <Navigate to="/unauthorized" />}
+          element={ <FacultyDashboard /> }
         />
         <Route
           path="/dean"
-          element={user ? <DeanDashboard /> : <Navigate to="/unauthorized" />}
+          element={ <DeanDashboard />}
         />
+        <Route path="/secretary" element={<SecretaryDashboard/>} />
       </Routes>
     </Router>
   );

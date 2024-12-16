@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   addDoc,
   collection,
@@ -18,12 +18,13 @@ const StudentDashboard = () => {
   const [sequence, setSequence] = useState({
     faculty: "",
     secratory: "",
-    GS: "genral@sggs.ac.in",
+    GS: "genralsecretary@sggs.ac.in",
     dean: "",
   });
   const [facultyList, setFacultyList] = useState([]);
   const [secratoryList, setSecratoryList] = useState([]);
   const [deanList, setDeanList] = useState([]);
+  const formRef = useRef();
   // Fetch requests made by the logged-in student
   // useEffect(() => {
   //   const q = query(
@@ -40,18 +41,24 @@ const StudentDashboard = () => {
   //   return () => unsubscribe();
   // }, []);
 
-  const handleRequest = async () => {
+  const handleRequest = async (e) => {
+    e.preventDefault(); 
     try {
       setLoading(true);
-      await addDoc(collection(db, "requests"), {
-        studentId: auth.currentUser.uid,
+      await addDoc(collection(db, "Requests"), {
+        Author: auth.currentUser.email,
         reason,
+        dean:sequence.dean !== ""? sequence.dean:"Not Applied",
+        faculty:sequence.faculty !==""?sequence.faculty:"Not Applied",
+        secretary:sequence.secratory !==""?sequence.secratory:"Not Applied",
         status: "Pending",
-        currentApprover: "faculty",
-        createdAt: Timestamp.now(),
+        currentApprover: sequence.faculty!==""? sequence.faculty:sequence.secratory!==""?sequence.secratory:sequence.GS,
+        createdAt: Timestamp.now()
       });
       setReason("");
+      setSequence({ faculty: "", secratory: "", GS: "genralsecretary@sggs.ac.in", dean: "" });
       alert("Request submitted successfully!");
+      formRef.current.reset();
     } catch (error) {
       console.error("Error submitting request:", error);
       alert("Failed to submit the request.");
@@ -63,8 +70,7 @@ const StudentDashboard = () => {
     async function getFaculty() {
       const fC = await getDocs(collection(db, "Faculty"));
       const facultyData = fC.docs.map((doc) => doc.data()); // Extracting the data
-     setFacultyList(facultyData);
-      
+      setFacultyList(facultyData);
     }
     async function getSecratory() {
       const sec = await getDocs(collection(db, "Secratory"));
@@ -87,54 +93,81 @@ const StudentDashboard = () => {
       {/* Form to submit a new request */}
       {show ? (
         <>
-          {" "}
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason for permission"
-            disabled={loading}
-            rows="4"
-            cols="50"
-          />
-          <br />
-          <button onClick={handleRequest} disabled={loading || !reason.trim()}>
-            {loading ? "Submitting..." : "Submit Request"}
-          </button>
-          <br />
-          <h3>Select Sequence (Priority Wise)</h3>
-          <label>
-            1
-            <select value={sequence.faculty} name="faculty"  onChange={(e) => setSequence({ ...sequence, faculty: e.target.value })}>
-              <option value="">Select</option>
-              {facultyList.map((faculty, index) => (
-                <option key={index} value={faculty.Name}>
-                  {faculty.Name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            2
-            <select value={sequence.secratory} name="secratory"  onChange={(e) => setSequence({ ...sequence, secratory: e.target.value })}>
-              <option value="">Select</option>
-              {secratoryList.map((secratory, index) => (
-                <option key={index} value={secratory.Name}>
-                  {secratory.Name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            1
-            <select value={sequence.dean} name="dean"  onChange={(e) => setSequence({ ...sequence, dean: e.target.value })}>
-              <option value="">Select</option>
-              {deanList.map((dean, index) => (
-                <option key={index} value={dean.Name}>
-                  {dean.Name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <form onSubmit={handleRequest} ref={formRef}>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reason for permission"
+              disabled={loading}
+              rows="4"
+              cols="50"
+            />
+            <br />
+            <h3>Select Sequence (Priority Wise)</h3>
+            <h5>Leave epmpty if not applicable</h5>
+            <label>
+              1
+              <select
+                value={sequence.faculty}
+                name="faculty"
+                onChange={(e) =>
+                  setSequence({ ...sequence, faculty: e.target.value })
+                }
+              >
+                <option value="">Select Faculty</option>
+                {facultyList.map((faculty, index) => (
+                  <option key={index} value={faculty.Name}>
+                    {faculty.Name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              2
+              <select
+                value={sequence.secratory}
+                name="secratory"
+                onChange={(e) =>
+                  setSequence({ ...sequence, secratory: e.target.value })
+                }
+              >
+                <option value="">Select Secretary</option>
+                {secratoryList.map((secratory, index) => {
+                  if (secratory.role !== "Genral") {
+                    return (
+                      <option key={index} value={secratory.role}>
+                        {secratory.role}
+                      </option>
+                    );
+                  }
+                })}
+              </select>
+            </label>
+            <label>
+              3
+              <select
+                value={sequence.dean}
+                name="dean"
+                onChange={(e) =>
+                  setSequence({ ...sequence, dean: e.target.value })
+                }
+              >
+                <option value="">Select Dean</option>
+                {deanList.map((dean, index) => (
+                  <option key={index} value={dean.role}>
+                    {dean.role}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <button
+              type="submit"
+              disabled={loading || !reason.trim()}
+            >
+              {loading ? "Submitting..." : "Submit Request"}
+            </button>
+          </form>
         </>
       ) : (
         <button type="click" onClick={() => setShow((prev) => true)}>

@@ -31,7 +31,11 @@ const Login = () => {
         navigate("/faculty");
       } else if (role === "Dean") {
         navigate("/dean");
-      } else {
+      }
+      else if(role === "GS" || "TS"|| "CS" || "SS"){
+        navigate("/secretary");
+      } 
+      else {
         navigate("/unauthorized");
       }
     } catch (error) {
