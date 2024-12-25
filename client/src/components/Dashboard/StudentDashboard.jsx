@@ -46,45 +46,55 @@ const StudentDashboard = () => {
   //   });
   //   return () => unsubscribe();
   // }, []);
-
+  const showPdf = (pdf) => {
+    // window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
+    setPdfFile(`http://localhost:5000/files/${pdf}`);
+  };
   const handleRequest = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     const getPdf = async () => {
       const result = await axios.get("http://localhost:5000/get-files");
       console.log(result.data.data);
       setAllImage(result.data.data);
     };
-    const showPdf = (pdf) => {
-      // window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
-      setPdfFile(`http://localhost:5000/files/${pdf}`)
-    };
 
     const formData = new FormData();
-      formData.append("title", title);
-      formData.append("file", file);
+    formData.append("title", title);
+    formData.append("file", file);
 
-      const uploadResponse = await axios.post(
-        "http://localhost:5000/upload-files",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+    const uploadResponse = await axios.post(
+      "http://localhost:5000/upload-files",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
 
-      console.log("File uploaded:", uploadResponse.data);
-      getPdf();
+    console.log("File uploaded:", uploadResponse.data);
+    getPdf();
     try {
       setLoading(true);
       await addDoc(collection(db, "Requests"), {
         Author: auth.currentUser.email,
         reason,
-        dean:sequence.dean !== ""? sequence.dean:"Not Applied",
-        faculty:sequence.faculty !==""?sequence.faculty:"Not Applied",
-        secretary:sequence.secratory !==""?sequence.secratory:"Not Applied",
+        dean: sequence.dean !== "" ? sequence.dean : "Not Applied",
+        faculty: sequence.faculty !== "" ? sequence.faculty : "Not Applied",
+        secretary:
+          sequence.secratory !== "" ? sequence.secratory : "Not Applied",
         status: "Pending",
-        currentApprover: sequence.faculty!==""? sequence.faculty:sequence.secratory!==""?sequence.secratory:sequence.GS,
-        createdAt: Timestamp.now()
+        currentApprover:
+          sequence.faculty !== ""
+            ? sequence.faculty
+            : sequence.secratory !== ""
+            ? sequence.secratory
+            : sequence.GS,
+        createdAt: Timestamp.now(),
       });
       setReason("");
-      setSequence({ faculty: "", secratory: "", GS: "genralsecretary@sggs.ac.in", dean: "" });
+      setSequence({
+        faculty: "",
+        secratory: "",
+        GS: "genralsecretary@sggs.ac.in",
+        dean: "",
+      });
       alert("Request submitted successfully!");
       formRef.current.reset();
     } catch (error) {
@@ -129,7 +139,8 @@ const StudentDashboard = () => {
               disabled={loading}
               rows="4"
               cols="50"
-            /><h4>Upload PDF</h4>
+            />
+            <h4>Upload PDF</h4>
             <hr />
             <input
               type="text"
@@ -144,26 +155,7 @@ const StudentDashboard = () => {
               onChange={(e) => setFile(e.target.files[0])}
               required
             />
-             <div className="uploaded">
-        <h4>Uploaded PDF:</h4>
-        <div className="output-div">
-          {allImage == null
-            ? ""
-            : allImage.map((data) => {
-                return (
-                  <div className="inner-div">
-                    <h6>Title: {data.title}</h6>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => showPdf(data.pdf)}
-                    >
-                      Show Pdf
-                    </button>
-                  </div>
-                );
-              })}
-        </div>
-      </div>
+            <div className="uploaded"></div>
             <br />
             <h3>Select Sequence (Priority Wise)</h3>
             <h5>Leave epmpty if not applicable</h5>
@@ -223,10 +215,7 @@ const StudentDashboard = () => {
               </select>
             </label>
             <br />
-            <button
-              type="submit"
-              disabled={loading || !reason.trim()}
-            >
+            <button type="submit" disabled={loading || !reason.trim()}>
               {loading ? "Submitting..." : "Submit Request"}
             </button>
           </form>
@@ -236,6 +225,25 @@ const StudentDashboard = () => {
           New Request
         </button>
       )}
+
+      <h4>Uploaded PDF:</h4>
+      <div className="output-div">
+        {allImage == null
+          ? ""
+          : allImage.map((data, i) => {
+              return (
+                <div className="inner-div" key={i}>
+                  <h6>Title: {data.title}</h6>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => showPdf(data.pdf)}
+                  >
+                    Show Pdf
+                  </button>
+                </div>
+              );
+            })}
+      </div>
       {/* List of submitted requests */}
       <h3>Your Requests</h3>
       {requests.length === 0 ? (

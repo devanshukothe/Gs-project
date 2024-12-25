@@ -218,7 +218,7 @@ const Register = () => {
               type="password"
               value={clubDetails.password}
               onChange={handleChange}
-              placeholder="abc@sggs.ac.in"
+              placeholder="password"
               name="password"
               required
             />
