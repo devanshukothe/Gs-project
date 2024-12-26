@@ -148,9 +148,9 @@ const FacultyDashboard = () => {
       <ul>
         {requests.map((request, i) => (
           <li key={i} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
-            <p><strong>Request Author:</strong> {request.Author}</p>
-            <p><strong>Reason:</strong> {request.reason}</p>
-            <p><strong>Status:</strong> {request.status}</p>
+            <p><strong>Request Author:</strong> {request? request.pending.Author:"Error"}</p>
+            <p><strong>Reason:</strong> {request? request.pending.reason:"Error"}</p>
+            <p><strong>Status:</strong> {request? request.pending.status:"Error"}</p>
             {type === 'pending' && (
               <>
                 <button onClick={() => handleApprove(request.id)} style={{ marginRight: "10px", padding: "5px 10px", backgroundColor: "green", color: "white" }}>Approve</button>

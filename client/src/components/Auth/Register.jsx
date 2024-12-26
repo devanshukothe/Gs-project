@@ -246,6 +246,7 @@ const Register = () => {
               value={clubDetails.password}
               onChange={handleChange}
               placeholder="Password"
+              placeholder="password"
               name="password"
               required
               class="form-control"
