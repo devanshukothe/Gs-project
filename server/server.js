@@ -9,19 +9,22 @@ const PdfSchemaModel = require("./PdfDetails");
 const dbPassword = encodeURIComponent("momdaddk21"); // Encode password for URI safety
 const dbURI = `mongodb+srv://devanshukothe123:${dbPassword}@permission-app.qyvm4.mongodb.net/Permission-App?retryWrites=true&w=majority`;
 
-mongoose.connect(dbURI, {
-  useNewUrlParser: true,
-})
-.then(() => {
-  console.log("Connected to database");
-})
-.catch((e) => console.log(e));
+mongoose
+  .connect(dbURI, {
+    useNewUrlParser: true,
+  })
+  .then(() => {
+    console.log("Connected to database");
+  })
+  .catch((e) => console.log(e));
 
-app.use(cors({
-  origin:"http://localhost:5173",
-  methods:["GET","PUT","POST","DELETE"],
-  credentials:true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "PUT", "POST", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use("/files", express.static("files"));
 
@@ -31,8 +34,7 @@ const storage = multer.diskStorage({
     cb(null, "./files");
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now();
-    cb(null, uniqueSuffix + file.originalname);
+    cb(null, file.originalname);
   },
 });
 
@@ -57,6 +59,30 @@ app.get("/get-files", async (req, res) => {
     });
   } catch (error) {}
 });
+app.post("/find-file", async (req, res) => {
+  const { name } = req.body;
+  console.log(name);
+  try {
+    if (!name) {
+      return res.status(400).json({ success: false, msg: "Name not found !!" });
+    }
+
+    // Use map with async/await inside Promise.all to wait for all promises
+    const pdfres = (await Promise.all(
+      name.map(async (n) => {
+        const pdf = await PdfSchemaModel.find({ pdf: n });
+        return pdf;
+      })
+    )).flat();
+
+    console.log(pdfres); // This will now contain resolved data, not promises
+    res.status(200).json({ success: true, pdfres });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, msg: "Server error" });
+  }
+});
+
 app.get("/", async (req, res) => {
   res.send("Success!!!!!!");
 });

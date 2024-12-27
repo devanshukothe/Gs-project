@@ -51,8 +51,8 @@ const Login = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {role === "" ? (
         <select className="dropdown btn btn-secondary  dropdown-toggle m-3 text-center"  value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="none" class="dropdown-item">Select Role</option>
-          <option value="IC" class="dropdown-item">Institute Club</option>
+          <option value="none" className="dropdown-item">Select Role</option>
+          <option value="IC" className="dropdown-item">Institute Club</option>
           <option value="DC">Departmental Club</option>
           <option value="Faculty">Faculty Coordinator</option>
           <option value="Dean">Dean of Student Activities</option>
@@ -62,29 +62,29 @@ const Login = () => {
           <option value="CS">Cultural Secretary</option>
         </select>
       ) : (
-        <section class="vh-25">
-        <div class="container py-5 h-75">
-          <div class="row d-flex align-items-center justify-content-center h-100">
-             <div class="card w-25 h-25">
+        <section className="vh-25">
+        <div className="container py-5 h-75">
+          <div className="row d-flex align-items-center justify-content-center h-100">
+             <div className="card w-25 h-25">
               <img src="https://imgs.search.brave.com/R2DR590rd1GhsX2mFiNtnQCHNK8HQ32afpIipD746wk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA0LzUzLzMyLzc2/LzM2MF9GXzQ1MzMy/NzYyMF9mbExTaFJD/VU50cW9WTUszTnlm/SmRLSTFVblEzRHhC/eS5qcGc"
-                class="img-fluid" alt="Phone image"/>
+                className="img-fluid" alt="Phone image"/>
             </div> 
-            <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+            <div className="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
         <form onSubmit={handleLogin}>
-          <div data-mdb-input-init class="form-outline mb-4">
-            <label class="form-label" for="form1Example13">Email:</label>
+          <div data-mdb-input-init className="form-outline mb-4">
+            <label className="form-label" htmlFor="form1Example13">Email:</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              class="form-control form-control-lg"
+              className="form-control form-control-lg"
             />
           </div>
-          <div data-mdb-input-init class="form-outline mb-4">
-            <label class="form-label" for="form1Example23">Password:</label>
+          <div data-mdb-input-init className="form-outline mb-4">
+            <label className="form-label" htmlFor="form1Example23">Password:</label>
             <input
-             id="form1Example23" class="form-control form-control-lg"
+             id="form1Example23" className="form-control form-control-lg"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -92,7 +92,7 @@ const Login = () => {
               
             />
           </div>
-          <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg btn-block" disabled={loading}>
+          <button type="submit" data-mdb-button-init data-mdb-ripple-init className="btn btn-primary btn-lg btn-block" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>

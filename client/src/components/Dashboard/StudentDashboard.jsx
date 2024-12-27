@@ -47,61 +47,69 @@ const StudentDashboard = () => {
   //   return () => unsubscribe();
   // }, []);
   const showPdf = (pdf) => {
-    // window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
-    setPdfFile(`http://localhost:5000/files/${pdf}`);
+    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
+    // setPdfFile(`http://localhost:5000/files/${pdf}`);
   };
   const handleRequest = async (e) => {
     e.preventDefault();
-    const getPdf = async () => {
-      const result = await axios.get("http://localhost:5000/get-files");
-      console.log(result.data.data);
-      setAllImage(result.data.data);
-    };
+    if (
+      sequence.faculty !== "" ||
+      sequence.secratory !== "" ||
+      sequence.dean !== ""
+    ) {
+      const getPdf = async () => {
+        const result = await axios.get("http://localhost:5000/get-files");
+        console.log(result.data.data);
+        setAllImage(result.data.data);
+      };
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("file", file);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("file", file);
+      const uploadResponse = await axios.post(
+        "http://localhost:5000/upload-files",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-    const uploadResponse = await axios.post(
-      "http://localhost:5000/upload-files",
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
-
-    console.log("File uploaded:", uploadResponse.data);
-    getPdf();
-    try {
-      setLoading(true);
-      await addDoc(collection(db, "Requests"), {
-        Author: auth.currentUser.email,
-        reason,
-        dean: sequence.dean !== "" ? sequence.dean : "Not Applied",
-        faculty: sequence.faculty !== "" ? sequence.faculty : "Not Applied",
-        secretary:
-          sequence.secratory !== "" ? sequence.secratory : "Not Applied",
-        status: "Pending",
-        currentApprover:
-          sequence.faculty !== ""
-            ? sequence.faculty
-            : sequence.secratory !== ""
-            ? sequence.secratory
-            : sequence.GS,
-        createdAt: Timestamp.now(),
-      });
-      setReason("");
-      setSequence({
-        faculty: "",
-        secratory: "",
-        GS: "genralsecretary@sggs.ac.in",
-        dean: "",
-      });
-      alert("Request submitted successfully!");
-      formRef.current.reset();
-    } catch (error) {
-      console.error("Error submitting request:", error);
-      alert("Failed to submit the request.");
-    } finally {
-      setLoading(false);
+      console.log("File uploaded:", uploadResponse.data);
+      getPdf();
+      try {
+        setLoading(true);
+        await addDoc(collection(db, "Requests"), {
+          Author: auth.currentUser.email,
+          file: file.name,
+          dean: sequence.dean !== "" ? sequence.dean : "Not Applied",
+          faculty: sequence.faculty !== "" ? sequence.faculty : "Not Applied",
+          secretary:
+            sequence.secratory !== "" ? sequence.secratory : "Not Applied",
+          status: "Pending",
+          currentApprover:
+            sequence.faculty !== ""
+              ? sequence.faculty
+              : sequence.secratory !== ""
+              ? sequence.secratory
+              : sequence.GS,
+          createdAt: Timestamp.now(),
+        });
+        setReason("");
+        setSequence({
+          faculty: "",
+          secratory: "",
+          GS: "genralsecretary@sggs.ac.in",
+          dean: "",
+        });
+        setTitle("");
+        alert("Request submitted successfully!");
+        formRef.current.reset();
+      } catch (error) {
+        console.error("Error submitting request:", error);
+        alert("Failed to submit the request.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("Please select atleast one in sequence!");
     }
   };
   useEffect(() => {
@@ -132,14 +140,6 @@ const StudentDashboard = () => {
       {show ? (
         <>
           <form onSubmit={handleRequest} ref={formRef}>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Reason for permission"
-              disabled={loading}
-              rows="4"
-              cols="50"
-            />
             <h4>Upload PDF</h4>
             <hr />
             <input
@@ -215,10 +215,28 @@ const StudentDashboard = () => {
               </select>
             </label>
             <br />
-            <button type="submit" disabled={loading || !reason.trim()}>
+            <button type="submit" disabled={loading}>
               {loading ? "Submitting..." : "Submit Request"}
             </button>
           </form>
+          <h4>Uploaded PDF:</h4>
+          <div className="output-div">
+            {allImage == null
+              ? ""
+              : allImage.map((data, i) => {
+                  return (
+                    <div className="inner-div" key={i}>
+                      <h6>Title: {data.title}</h6>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => showPdf(data.pdf)}
+                      >
+                        Show Pdf
+                      </button>
+                    </div>
+                  );
+                })}
+          </div>
         </>
       ) : (
         <button type="click" onClick={() => setShow((prev) => true)}>
@@ -226,24 +244,6 @@ const StudentDashboard = () => {
         </button>
       )}
 
-      <h4>Uploaded PDF:</h4>
-      <div className="output-div">
-        {allImage == null
-          ? ""
-          : allImage.map((data, i) => {
-              return (
-                <div className="inner-div" key={i}>
-                  <h6>Title: {data.title}</h6>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => showPdf(data.pdf)}
-                  >
-                    Show Pdf
-                  </button>
-                </div>
-              );
-            })}
-      </div>
       {/* List of submitted requests */}
       <h3>Your Requests</h3>
       {requests.length === 0 ? (
