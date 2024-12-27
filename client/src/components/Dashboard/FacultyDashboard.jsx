@@ -15,9 +15,9 @@ import { auth, db } from "../../firebase/firebase";
 
 const FacultyDashboard = () => {
   const [requests, setRequests] = useState({
-    pending: [],
-    forwarded: [],
-    rejected: []
+    pending: { req: [], pdf: [] },
+    forwarded: { req: [], pdf: [] },
+    rejected: { req: [], pdf: [] },
   });
   const [logData, setLogData] = useState(null);
 
@@ -39,9 +39,31 @@ const FacultyDashboard = () => {
     if (auth.currentUser) {
       getFacultyData();
     }
-  }, []); // Runs once on mount
+  }, []);
 
-  // Fetch all requests (pending, forwarded, and rejected) when logData is updated
+  const showPdf = (pdf) => {
+    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
+  };
+
+  const getPdf = async (names) => {
+    try {
+      const pdf = await fetch("http://127.0.0.1:5000/find-file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: names }),
+      });
+      const response = await pdf.json();
+      if (response.success) {
+        return response.pdfres;
+      } else {
+        console.error("API error: Unable to fetch PDFs");
+      }
+    } catch (error) {
+      console.error("Error fetching PDFs:", error);
+    }
+  };
+
+  // Fetch all requests when logData is updated
   useEffect(() => {
     if (logData && logData.Name) {
       const fetchRequests = async () => {
@@ -51,40 +73,61 @@ const FacultyDashboard = () => {
             collection(db, "Requests"),
             where("currentApprover", "==", logData.Name)
           );
-          const unsubscribe = onSnapshot(pendingQuery, (snapshot) => {
+
+          const unsubscribe = onSnapshot(pendingQuery, async (snapshot) => {
             const fetchedPending = snapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }));
-            setRequests((prev) => ({ ...prev, pending: fetchedPending }));
+
+            const names = fetchedPending.map((req) => req.file);
+            const pdfs = await getPdf(names);
+
+            setRequests((prev) => ({
+              ...prev,
+              pending: { req: fetchedPending, pdf: pdfs },
+            }));
           });
 
           // Fetch forwarded requests
           const forwardedSnapshot = await getDocs(
-            collection(db, "Faculty", logData.email, "ApprovedRequests")
+            collection(db, "Faculty", logData.email, "approveRequests")
           );
           const forwardedRequests = await Promise.all(
             forwardedSnapshot.docs.map(async (forwardDoc) => {
-              const request = await getDoc(doc(db, "Requests", forwardDoc.data().requestId));
+              const request = await getDoc(
+                doc(db, "Requests", forwardDoc.data().requestId)
+              );
               return request.data();
             })
           );
-          setRequests((prev) => ({ ...prev, forwarded: forwardedRequests }));
+          const fnames = forwardedRequests.map((req) => req.file);
+          const fpdfs = await getPdf(fnames)
+          setRequests((prev) => ({
+            ...prev,
+            forwarded: { req: forwardedRequests, pdf: fpdfs },
+          }));
 
           // Fetch rejected requests
           const rejectedSnapshot = await getDocs(
-            collection(db, "Faculty", logData.email, "RejectedRequests")
+            collection(db, "Faculty", logData.email, "rejectRequests")
           );
           const rejectedRequests = await Promise.all(
             rejectedSnapshot.docs.map(async (rejectDoc) => {
-              const request = await getDoc(doc(db, "Requests", rejectDoc.data().requestId));
+              const request = await getDoc(
+                doc(db, "Requests", rejectDoc.data().requestId)
+              );
               return request.data();
             })
           );
-          setRequests((prev) => ({ ...prev, rejected: rejectedRequests }));
+          const rnames = rejectedRequests.map((req) => req.file);
+          const rpdfs = await getPdf(rnames)
+          setRequests((prev) => ({
+            ...prev,
+            rejected: { req: rejectedRequests, pdf: rpdfs },
+          }));
 
-          // Cleanup subscription
-          return () => unsubscribe();
+          return () => unsubscribe(); // Cleanup subscription
         } catch (error) {
           console.error("Error fetching requests:", error);
         }
@@ -92,76 +135,94 @@ const FacultyDashboard = () => {
 
       fetchRequests();
     }
-  }, [logData]); // Runs when logData changes
+  }, [logData]);
 
-  // Approve request and forward to the GS (General Secretary)
-  const handleApprove = async (requestId) => {
+  const handleRequest = async (requestId, action) => {
     try {
       const requestRef = doc(db, "Requests", requestId);
-      const next = requests.pending.find((req) => req.id === requestId)?.secretary || "General Secretary";
+      const next =
+        requests.pending.req.find((req) => req.id === requestId)?.secretary ||
+        "General Secretary";
+      const status = action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
+      const responseMessage =
+        action === "approve"
+          ? `Your request has been approved by the faculty and forwarded to the ${next}.`
+          : "Your request has been rejected by the faculty.";
 
       await updateDoc(requestRef, {
-        status: "Approved by Faculty",
-        currentApprover: next,
-        responseMessage: `Your request has been approved by the faculty and forwarded to the GS.`,
+        status,
+        currentApprover: action === "approve" ? next : null,
+        responseMessage,
       });
 
-      await addDoc(collection(db, "Faculty", logData.email, "ApprovedRequests"), {
-        requestId,
-        ForwardedTo: next,
-        Date: Timestamp.now(),
-      });
+      await addDoc(
+        collection(db, "Faculty", logData.email, `${action}Requests`),
+        {
+          requestId,
+          Date: Timestamp.now(),
+        }
+      );
 
-      alert(`Request approved and forwarded to ${next}.`);
+      alert(`Request ${action === "approve" ? "approved" : "rejected"}.`);
     } catch (error) {
-      console.error("Error approving request:", error);
+      console.error(`Error ${action} request:`, error);
     }
   };
 
-  // Reject request and notify the student
-  const handleReject = async (requestId) => {
-    try {
-      const requestRef = doc(db, "Requests", requestId);
-      await updateDoc(requestRef, {
-        status: "Rejected by Faculty",
-        currentApprover: null,
-        responseMessage: "Your request has been rejected by the faculty.",
-      });
-
-      await addDoc(collection(db, "Faculty", logData.email, "RejectedRequests"), {
-        requestId,
-        Date: Timestamp.now(),
-      });
-
-      alert("Request rejected.");
-    } catch (error) {
-      console.error("Error rejecting request:", error);
-    }
-  };
-
-  // Render requests
   const renderRequests = (requests, type) => {
-    if (!requests.length) {
+    if (requests.req.length === 0) {
       return <p>No requests {type}.</p>;
     }
+
     return (
       <ul>
-        {requests.map((request, i) => (
-          <li key={i} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
-            <p><strong>Request Author:</strong> {request.Author}</p>
-            <p><strong>Reason:</strong> {request.reason}</p>
-            <p><strong>Status:</strong> {request.status}</p>
-            {type === 'pending' && (
-              <>
-                <button onClick={() => handleApprove(request.id)} style={{ marginRight: "10px", padding: "5px 10px", backgroundColor: "green", color: "white" }}>Approve</button>
-                <button onClick={() => handleReject(request.id)} style={{ padding: "5px 10px", backgroundColor: "red", color: "white" }}>Reject</button>
-              </>
-            )}
-            {type === 'forwarded' && (
-              <p><strong>Dean's Approval:</strong> {request.status === "Approved by Dean" ? "Approved" : "Pending"}</p>
-            )}
-          </li>
-        ))}
+        {requests.req.map((r, i) => {
+          const pdfFile = requests.pdf.find((p) => p.pdf === r.file);
+          return (
+            <li key={i} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
+              <p>
+                <strong>Request Author:</strong> {r?.Author || "Error"}
+              </p>
+              <p>
+                <strong>File:</strong>
+                {r && pdfFile ? (
+                  <button onClick={() => showPdf(pdfFile.pdf)}>View Pdf</button>
+                ) : (
+                  "No file available"
+                )}
+              </p>
+              <p>
+                <strong>Status:</strong>
+                {r?.status || "Error"}
+              </p>
+              {type === "pending" && (
+                <>
+                  <button
+                    onClick={() => handleRequest(r.id, "approve")}
+                    style={{
+                      marginRight: "10px",
+                      padding: "5px 10px",
+                      backgroundColor: "green",
+                      color: "white",
+                    }}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleRequest(r.id, "reject")}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "red",
+                      color: "white",
+                    }}
+                  >
+                    Reject
+                  </button>
+                </>
+              )}
+            </li>
+          );
+        })}
       </ul>
     );
   };
@@ -173,19 +234,19 @@ const FacultyDashboard = () => {
       {/* Pending Requests Section */}
       <section>
         <h3>Pending Requests</h3>
-        {renderRequests(requests.pending, 'pending')}
+        {renderRequests(requests.pending, "pending")}
       </section>
 
       {/* Forwarded Requests Section */}
       <section style={{ marginTop: "40px" }}>
         <h3>Requests Forwarded to Dean</h3>
-        {renderRequests(requests.forwarded, 'forwarded')}
+        {renderRequests(requests.forwarded, "forwarded")}
       </section>
 
       {/* Rejected Requests Section */}
       <section style={{ marginTop: "40px" }}>
         <h3>Requests Rejected</h3>
-        {renderRequests(requests.rejected, 'rejected')}
+        {renderRequests(requests.rejected, "rejected")}
       </section>
     </div>
   );

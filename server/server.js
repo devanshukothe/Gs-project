@@ -1,35 +1,92 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-
+const express = require("express");
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
-app.use(cors());
+const mongoose = require("mongoose");
 app.use(express.json());
-
-// Connect to MongoDB
-const dbPassword = encodeURIComponent('momdaddk21'); // Encode password for URI safety
+const cors = require("cors");
+const multer = require("multer");
+const PdfSchemaModel = require("./PdfDetails");
+//mongodb connection----------------------------------------------
+const dbPassword = encodeURIComponent("momdaddk21"); // Encode password for URI safety
 const dbURI = `mongodb+srv://devanshukothe123:${dbPassword}@permission-app.qyvm4.mongodb.net/Permission-App?retryWrites=true&w=majority`;
 
-mongoose.connect(dbURI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+mongoose
+  .connect(dbURI, {
+    useNewUrlParser: true,
+  })
+  .then(() => {
+    console.log("Connected to database");
+  })
+  .catch((e) => console.log(e));
 
-// Define a Mongoose schema and model
-const userSchema = new mongoose.Schema({
-  name:String,
-  age:Number,
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "PUT", "POST", "DELETE"],
+    credentials: true,
+  })
+);
+
+app.use("/files", express.static("files"));
+
+//multer------------------------------------------------------------
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./files");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
-const User = mongoose.model('User', userSchema);
 
-// Define routes
-app.get('/', (req, res) => {
-  res.send('Server is running.');
+const upload = multer({ storage: storage });
+
+app.post("/upload-files", upload.single("file"), async (req, res) => {
+  console.log(req.file);
+  const title = req.body.title;
+  const fileName = req.file.filename;
+  try {
+    await PdfSchemaModel.create({ title: title, pdf: fileName });
+    res.send({ status: "ok" });
+  } catch (error) {
+    res.json({ status: error });
+  }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.get("/get-files", async (req, res) => {
+  try {
+    PdfSchemaModel.find({}).then((data) => {
+      res.send({ status: "ok", data: data });
+    });
+  } catch (error) {}
+});
+app.post("/find-file", async (req, res) => {
+  const { name } = req.body;
+  console.log(name);
+  try {
+    if (!name) {
+      return res.status(400).json({ success: false, msg: "Name not found !!" });
+    }
+
+    // Use map with async/await inside Promise.all to wait for all promises
+    const pdfres = (await Promise.all(
+      name.map(async (n) => {
+        const pdf = await PdfSchemaModel.find({ pdf: n });
+        return pdf;
+      })
+    )).flat();
+
+    console.log(pdfres); // This will now contain resolved data, not promises
+    res.status(200).json({ success: true, pdfres });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, msg: "Server error" });
+  }
+});
+
+app.get("/", async (req, res) => {
+  res.send("Success!!!!!!");
+});
+
+app.listen(5000, () => {
+  console.log("Server Started on http://127.0.0.1:5000");
 });
