@@ -2,25 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   addDoc,
   collection,
-  query,
-  where,
-  onSnapshot,
   Timestamp,
   getDocs,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import axios from "axios";
+import FileViewer from "../FileViewer"; // Import the FileViewer component
 
 const StudentDashboard = () => {
-  const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
-  const [requests, setRequests] = useState([]);
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [allImage, setAllImage] = useState(null);
-  const [pdfFile, setPdfFile] = useState(null);
-
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [sequence, setSequence] = useState({
     faculty: "",
     secratory: "",
@@ -31,25 +25,10 @@ const StudentDashboard = () => {
   const [secratoryList, setSecratoryList] = useState([]);
   const [deanList, setDeanList] = useState([]);
   const formRef = useRef();
-  // Fetch requests made by the logged-in student
-  // useEffect(() => {
-  //   const q = query(
-  //     collection(db, "requests"),
-  //     where("studentId", "==", auth.currentUser.uid)
-  //   );
-  //   const unsubscribe = onSnapshot(q, (snapshot) => {
-  //     const fetchedRequests = snapshot.docs.map((doc) => ({
-  //       id: doc.id,
-  //       ...doc.data(),
-  //     }));
-  //     setRequests(fetchedRequests);
-  //   });
-  //   return () => unsubscribe();
-  // }, []);
-  const showPdf = (pdf) => {
-    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
-    // setPdfFile(`http://localhost:5000/files/${pdf}`);
-  };
+
+  // Manage visibility of FileViewer for each PDF
+  const [showFileViewer, setShowFileViewer] = useState({});
+
   const handleRequest = async (e) => {
     e.preventDefault();
     if (
@@ -57,25 +36,23 @@ const StudentDashboard = () => {
       sequence.secratory !== "" ||
       sequence.dean !== ""
     ) {
-      const getPdf = async () => {
-        const result = await axios.get("http://localhost:5000/get-files");
-        console.log(result.data.data);
-        setAllImage(result.data.data);
-      };
-
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("file", file);
-      const uploadResponse = await axios.post(
-        "http://localhost:5000/upload-files",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      console.log("File uploaded:", uploadResponse.data);
-      getPdf();
       try {
         setLoading(true);
+
+        // Upload file
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("file", file);
+
+        const uploadResponse = await axios.post(
+          "http://localhost:5000/upload-files",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        console.log("File uploaded:", uploadResponse.data);
+
+        // Add request details to Firestore
         await addDoc(collection(db, "Requests"), {
           Author: auth.currentUser.email,
           file: file.name,
@@ -92,7 +69,7 @@ const StudentDashboard = () => {
               : sequence.GS,
           createdAt: Timestamp.now(),
         });
-        setReason("");
+
         setSequence({
           faculty: "",
           secratory: "",
@@ -102,6 +79,9 @@ const StudentDashboard = () => {
         setTitle("");
         alert("Request submitted successfully!");
         formRef.current.reset();
+
+        // Refresh the uploaded files list
+        fetchUploadedFiles();
       } catch (error) {
         console.error("Error submitting request:", error);
         alert("Failed to submit the request.");
@@ -109,59 +89,91 @@ const StudentDashboard = () => {
         setLoading(false);
       }
     } else {
-      alert("Please select atleast one in sequence!");
+      alert("Please select at least one in sequence!");
     }
   };
+
+  const fetchUploadedFiles = async () => {
+    try {
+      const result = await axios.get("http://localhost:5000/get-files");
+      if (result.data?.files) {
+        const files = result.data.files.map((file) => ({
+          ...file,
+          fileUrl: URL.createObjectURL(
+            new Blob([Uint8Array.from(atob(file.fileContent), (c) => c.charCodeAt(0))], {
+              type: file.contentType,
+            })
+          ),
+        }));
+        setUploadedFiles(files);
+      }
+    } catch (error) {
+      console.error("Error fetching uploaded PDFs:", error);
+    }
+  };
+
   useEffect(() => {
     async function getFaculty() {
       const fC = await getDocs(collection(db, "Faculty"));
-      const facultyData = fC.docs.map((doc) => doc.data()); // Extracting the data
+      const facultyData = fC.docs.map((doc) => doc.data());
       setFacultyList(facultyData);
     }
     async function getSecratory() {
       const sec = await getDocs(collection(db, "Secratory"));
-      const secratoryData = sec.docs.map((doc) => doc.data()); // Extracting the data
+      const secratoryData = sec.docs.map((doc) => doc.data());
       setSecratoryList(secratoryData);
     }
     async function getDeans() {
       const dean = await getDocs(collection(db, "Dean"));
-      const deanData = dean.docs.map((doc) => doc.data()); // Extracting the data
+      const deanData = dean.docs.map((doc) => doc.data());
       setDeanList(deanData);
     }
     getFaculty();
     getSecratory();
     getDeans();
+    fetchUploadedFiles();
   }, []);
-  return (
-    <div>
-      <h2>Student Dashboard</h2>
 
-      {/* Form to submit a new request */}
+  const toggleFileViewer = (pdfId) => {
+    setShowFileViewer((prev) => ({
+      ...prev,
+      [pdfId]: !prev[pdfId],
+    }));
+  };
+
+  return (
+    <div className="container my-4">
+      <h2 className="text-center">Student Dashboard</h2>
       {show ? (
-        <>
+        <div className="card p-4">
           <form onSubmit={handleRequest} ref={formRef}>
             <h4>Upload PDF</h4>
             <hr />
-            <input
-              type="text"
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setFile(e.target.files[0])}
-              required
-            />
-            <div className="uploaded"></div>
-            <br />
+            <div className="mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="file"
+                className="form-control"
+                accept="application/pdf"
+                onChange={(e) => setFile(e.target.files[0])}
+                required
+              />
+            </div>
             <h3>Select Sequence (Priority Wise)</h3>
-            <h5>Leave epmpty if not applicable</h5>
-            <label>
-              1
+            <small className="text-muted">Leave empty if not applicable</small>
+            <div className="mb-3">
+              <label>1</label>
               <select
+                className="form-select"
                 value={sequence.faculty}
                 name="faculty"
                 onChange={(e) =>
@@ -175,10 +187,11 @@ const StudentDashboard = () => {
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              2
+            </div>
+            <div className="mb-3">
+              <label>2</label>
               <select
+                className="form-select"
                 value={sequence.secratory}
                 name="secratory"
                 onChange={(e) =>
@@ -196,10 +209,11 @@ const StudentDashboard = () => {
                   }
                 })}
               </select>
-            </label>
-            <label>
-              3
+            </div>
+            <div className="mb-3">
+              <label>3</label>
               <select
+                className="form-select"
                 value={sequence.dean}
                 name="dean"
                 onChange={(e) =>
@@ -213,59 +227,52 @@ const StudentDashboard = () => {
                   </option>
                 ))}
               </select>
-            </label>
-            <br />
-            <button type="submit" disabled={loading}>
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
               {loading ? "Submitting..." : "Submit Request"}
             </button>
           </form>
-          <h4>Uploaded PDF:</h4>
-          <div className="output-div">
-            {allImage == null
-              ? ""
-              : allImage.map((data, i) => {
-                  return (
-                    <div className="inner-div" key={i}>
-                      <h6>Title: {data.title}</h6>
+        </div>
+      ) : (
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={() => setShow((prev) => true)}
+          >
+            New Request
+          </button>
+        </div>
+      )}
+      <div className="output-div mt-4 d-flex flex-column justify-content-center">
+        <h4>Uploaded PDFs</h4>
+        <div className="row">
+          {uploadedFiles.length === 0
+            ? "No files uploaded."
+            : uploadedFiles.map((data, i) => (
+                <div className="col-md-4 mb-3 w-100" key={i}>
+                  <div className="card ">
+                    <div className="card-body w-100">
+                      <h6 className="card-title">Title: {data.title}</h6>
                       <button
-                        className="btn btn-primary"
-                        onClick={() => showPdf(data.pdf)}
+                        className="btn btn-primary mb-2"
+                        onClick={() => {toggleFileViewer(data.filename);}}
                       >
-                        Show Pdf
+                        {showFileViewer[data.filename] ? "Hide Pdf" : "Show Pdf"}
                       </button>
+                      {showFileViewer[data.filename] && (
+                        <FileViewer file={data} />
+                      )}
                     </div>
-                  );
-                })}
-          </div>
-        </>
-      ) : (
-        <button type="click" onClick={() => setShow((prev) => true)}>
-          New Request
-        </button>
-      )}
-
-      {/* List of submitted requests */}
-      <h3>Your Requests</h3>
-      {requests.length === 0 ? (
-        <p>No requests found.</p>
-      ) : (
-        <ul>
-          {requests.map((request) => (
-            <li key={request.id} style={{ marginBottom: "10px" }}>
-              <p>
-                <strong>Reason:</strong> {request.reason}
-              </p>
-              <p>
-                <strong>Status:</strong> {request.status}
-              </p>
-              <p>
-                <strong>Response:</strong>{" "}
-                {request.responseMessage || "No response yet."}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+                  </div>
+                </div>
+              ))}
+        </div>
+      </div>
     </div>
   );
 };

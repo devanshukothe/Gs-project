@@ -11,6 +11,6 @@ const PdfSchema = new mongoose.Schema({
   },
 });
 
-const PdfSchemaModel = mongoose.model('PdfDetails', PdfSchema);
+const PdfSchemaModel = mongoose.model('Pdfdetails', PdfSchema);
 module.exports = PdfSchemaModel;
 

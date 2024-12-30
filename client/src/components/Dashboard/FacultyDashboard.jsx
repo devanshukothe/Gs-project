@@ -12,6 +12,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const FacultyDashboard = () => {
   const [requests, setRequests] = useState({
@@ -23,27 +24,26 @@ const FacultyDashboard = () => {
 
   // Fetch faculty data once the component mounts
   useEffect(() => {
-    const getFacultyData = async () => {
-      try {
-        const facultyDoc = await getDoc(doc(db, "Faculty", auth.currentUser.email));
-        if (facultyDoc.exists()) {
-          setLogData(facultyDoc.data());
-        } else {
-          console.log("No such faculty data found!");
-        }
-      } catch (error) {
-        console.error("Error fetching faculty data:", error);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const getFacultyData = async () => {
+          try {
+            const facultyDoc = await getDoc(doc(db, "Faculty", user.email));
+            if (facultyDoc.exists()) {
+              setLogData(facultyDoc.data());
+            } else {
+              console.error("No faculty data found for this email.");
+            }
+          } catch (error) {
+            console.error("Error fetching faculty data:", error);
+          }
+        };
+        getFacultyData();
       }
-    };
+    });
 
-    if (auth.currentUser) {
-      getFacultyData();
-    }
+    return () => unsubscribe();
   }, []);
-
-  const showPdf = (pdf) => {
-    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
-  };
 
   const getPdf = async (names) => {
     try {
@@ -53,11 +53,7 @@ const FacultyDashboard = () => {
         body: JSON.stringify({ name: names }),
       });
       const response = await pdf.json();
-      if (response.success) {
-        return response.pdfres;
-      } else {
-        console.error("API error: Unable to fetch PDFs");
-      }
+      return response.success ? response.pdfres : [];
     } catch (error) {
       console.error("Error fetching PDFs:", error);
     }
@@ -65,7 +61,7 @@ const FacultyDashboard = () => {
 
   // Fetch all requests when logData is updated
   useEffect(() => {
-    if (logData && logData.Name) {
+    if (logData?.Name) {
       const fetchRequests = async () => {
         try {
           // Fetch pending requests
@@ -73,13 +69,11 @@ const FacultyDashboard = () => {
             collection(db, "Requests"),
             where("currentApprover", "==", logData.Name)
           );
-
-          const unsubscribe = onSnapshot(pendingQuery, async (snapshot) => {
+          const unsubscribePending = onSnapshot(pendingQuery, async (snapshot) => {
             const fetchedPending = snapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }));
-
             const names = fetchedPending.map((req) => req.file);
             const pdfs = await getPdf(names);
 
@@ -95,14 +89,13 @@ const FacultyDashboard = () => {
           );
           const forwardedRequests = await Promise.all(
             forwardedSnapshot.docs.map(async (forwardDoc) => {
-              const request = await getDoc(
-                doc(db, "Requests", forwardDoc.data().requestId)
-              );
-              return request.data();
+              const request = await getDoc(doc(db, "Requests", forwardDoc.data().requestId));
+              return { id: forwardDoc.id, ...request.data() };
             })
           );
           const fnames = forwardedRequests.map((req) => req.file);
-          const fpdfs = await getPdf(fnames)
+          const fpdfs = await getPdf(fnames);
+
           setRequests((prev) => ({
             ...prev,
             forwarded: { req: forwardedRequests, pdf: fpdfs },
@@ -114,20 +107,17 @@ const FacultyDashboard = () => {
           );
           const rejectedRequests = await Promise.all(
             rejectedSnapshot.docs.map(async (rejectDoc) => {
-              const request = await getDoc(
-                doc(db, "Requests", rejectDoc.data().requestId)
-              );
-              return request.data();
+              const request = await getDoc(doc(db, "Requests", rejectDoc.data().requestId));
+              return { id: rejectDoc.id, ...request.data() };
             })
           );
           const rnames = rejectedRequests.map((req) => req.file);
-          const rpdfs = await getPdf(rnames)
+          const rpdfs = await getPdf(rnames);
+
           setRequests((prev) => ({
             ...prev,
             rejected: { req: rejectedRequests, pdf: rpdfs },
           }));
-
-          return () => unsubscribe(); // Cleanup subscription
         } catch (error) {
           console.error("Error fetching requests:", error);
         }
@@ -136,6 +126,10 @@ const FacultyDashboard = () => {
       fetchRequests();
     }
   }, [logData]);
+
+  const showPdf = (pdf) => {
+    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
+  };
 
   const handleRequest = async (requestId, action) => {
     try {
@@ -170,51 +164,41 @@ const FacultyDashboard = () => {
   };
 
   const renderRequests = (requests, type) => {
-    if (requests.req.length === 0) {
-      return <p>No requests {type}.</p>;
-    }
+    if (!requests.req.length) return <p>No requests {type}.</p>;
 
     return (
-      <ul>
+      <ul className="list-group">
         {requests.req.map((r, i) => {
           const pdfFile = requests.pdf.find((p) => p.pdf === r.file);
           return (
-            <li key={i} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
+            <li key={i} className="list-group-item">
               <p>
-                <strong>Request Author:</strong> {r?.Author || "Error"}
+                <strong>Request Author:</strong> {r.Author || "Error"}
               </p>
               <p>
-                <strong>File:</strong>
-                {r && pdfFile ? (
-                  <button onClick={() => showPdf(pdfFile.pdf)}>View Pdf</button>
+                <strong>File:</strong>{" "}
+                {pdfFile ? (
+                  <button className="btn btn-primary" onClick={() => showPdf(pdfFile.pdf)}>
+                    View Pdf
+                  </button>
                 ) : (
                   "No file available"
                 )}
               </p>
               <p>
-                <strong>Status:</strong>
-                {r?.status || "Error"}
+                <strong>Status:</strong> {r.status || "Error"}
               </p>
               {type === "pending" && (
                 <>
                   <button
                     onClick={() => handleRequest(r.id, "approve")}
-                    style={{
-                      marginRight: "10px",
-                      padding: "5px 10px",
-                      backgroundColor: "green",
-                      color: "white",
-                    }}
+                    className="btn btn-success"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleRequest(r.id, "reject")}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "red",
-                      color: "white",
-                    }}
+                    className="btn btn-danger"
                   >
                     Reject
                   </button>
@@ -228,23 +212,20 @@ const FacultyDashboard = () => {
   };
 
   return (
-    <div>
-      <h2>Faculty Dashboard</h2>
+    <div className="container">
+      <h2 className="my-4">Faculty Dashboard</h2>
 
-      {/* Pending Requests Section */}
       <section>
         <h3>Pending Requests</h3>
         {renderRequests(requests.pending, "pending")}
       </section>
 
-      {/* Forwarded Requests Section */}
-      <section style={{ marginTop: "40px" }}>
+      <section>
         <h3>Requests Forwarded to Dean</h3>
         {renderRequests(requests.forwarded, "forwarded")}
       </section>
 
-      {/* Rejected Requests Section */}
-      <section style={{ marginTop: "40px" }}>
+      <section>
         <h3>Requests Rejected</h3>
         {renderRequests(requests.rejected, "rejected")}
       </section>

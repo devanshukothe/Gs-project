@@ -1,0 +1,29 @@
+.pdf-page{
+    margin-left: 9rem !important;
+
+}
+.doc{
+    scrollbar-width: none;
+}
+@media (max-width:765px) {
+    .pdf-page{
+        scale: 0.8;
+    }
+    .doc{
+        height: 600px !important;
+    }
+}
+@media (max-width:426px) {
+  
+    .doc{
+        height: 500px !important;
+    }
+}
+@media (max-width:376px) {
+    .pdf-page{
+        scale: 0.65;
+    }
+    .doc{
+        height: 450px !important;
+    }
+}
