@@ -45,43 +45,65 @@ const FacultyDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  const getPdf = async (names) => {
+  const fetchUploadedFiles = async (names) => {
     try {
-      const pdf = await fetch("http://127.0.0.1:5000/find-file", {
+      const result = await fetch(`http://localhost:5000/get-files`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: names }),
+        body: JSON.stringify({ names }),
+        headers: { "Content-Type": "application/json" }
       });
-      const response = await pdf.json();
-      return response.success ? response.pdfres : [];
+      const response = await result.json();
+      if (response.status === "ok") {
+        if (response?.files) {
+          const files = response.files.map((file) => ({
+            ...file,
+            fileUrl: URL.createObjectURL(
+              new Blob(
+                [
+                  Uint8Array.from(atob(file.fileContent), (c) =>
+                    c.charCodeAt(0)
+                  ),
+                ],
+                {
+                  type: file.contentType,
+                }
+              )
+            ),
+          }));
+          return files;
+        }
+      }
     } catch (error) {
-      console.error("Error fetching PDFs:", error);
+      console.error("Error fetching uploaded PDFs:", error);
     }
   };
 
   // Fetch all requests when logData is updated
   useEffect(() => {
-    if (logData?.Name) {
+    if (logData?.name) {
       const fetchRequests = async () => {
         try {
           // Fetch pending requests
           const pendingQuery = query(
             collection(db, "Requests"),
-            where("currentApprover", "==", logData.Name)
+            where("currentApprover", "==", logData.name)
           );
-          const unsubscribePending = onSnapshot(pendingQuery, async (snapshot) => {
-            const fetchedPending = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            const names = fetchedPending.map((req) => req.file);
-            const pdfs = await getPdf(names);
+          const unsubscribePending = onSnapshot(
+            pendingQuery,
+            async (snapshot) => {
+              const fetchedPending = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
+              const names = fetchedPending.map((req) => req.file);
+              const pdfs = await fetchUploadedFiles(names);
 
-            setRequests((prev) => ({
-              ...prev,
-              pending: { req: fetchedPending, pdf: pdfs },
-            }));
-          });
+              setRequests((prev) => ({
+                ...prev,
+                pending: { req: fetchedPending, pdf: pdfs },
+              }));
+            }
+          );
 
           // Fetch forwarded requests
           const forwardedSnapshot = await getDocs(
@@ -89,12 +111,14 @@ const FacultyDashboard = () => {
           );
           const forwardedRequests = await Promise.all(
             forwardedSnapshot.docs.map(async (forwardDoc) => {
-              const request = await getDoc(doc(db, "Requests", forwardDoc.data().requestId));
+              const request = await getDoc(
+                doc(db, "Requests", forwardDoc.data().requestId)
+              );
               return { id: forwardDoc.id, ...request.data() };
             })
           );
           const fnames = forwardedRequests.map((req) => req.file);
-          const fpdfs = await getPdf(fnames);
+          const fpdfs = await fetchUploadedFiles(fnames);
 
           setRequests((prev) => ({
             ...prev,
@@ -107,12 +131,14 @@ const FacultyDashboard = () => {
           );
           const rejectedRequests = await Promise.all(
             rejectedSnapshot.docs.map(async (rejectDoc) => {
-              const request = await getDoc(doc(db, "Requests", rejectDoc.data().requestId));
+              const request = await getDoc(
+                doc(db, "Requests", rejectDoc.data().requestId)
+              );
               return { id: rejectDoc.id, ...request.data() };
             })
           );
           const rnames = rejectedRequests.map((req) => req.file);
-          const rpdfs = await getPdf(rnames);
+          const rpdfs = await fetchUploadedFiles(rnames);
 
           setRequests((prev) => ({
             ...prev,
@@ -127,25 +153,25 @@ const FacultyDashboard = () => {
     }
   }, [logData]);
 
-  const showPdf = (pdf) => {
-    window.open(`http://localhost:5000/files/${pdf}`, "_blank", "noreferrer");
+  const showPdf = (pdfUrl) => {
+    window.open(`${pdfUrl}`, "_blank", "noreferrer");
   };
 
   const handleRequest = async (requestId, action) => {
     try {
       const requestRef = doc(db, "Requests", requestId);
       const next =
-        requests.pending.req.find((req) => req.id === requestId)?.secretary ||
-        "General Secretary";
-      const status = action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
+        requests.pending.req.find((req) => req.id === requestId)?.secretary;
+      const status =
+        action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
       const responseMessage =
         action === "approve"
-          ? `Your request has been approved by the faculty and forwarded to the ${next}.`
+          ? `Your request has been approved by the faculty and forwarded to the ${next==='Not Applied'?"Genral Secretary":next}.`
           : "Your request has been rejected by the faculty.";
 
       await updateDoc(requestRef, {
         status,
-        currentApprover: action === "approve" ? next : null,
+        currentApprover: action === "approve" ? next==='Not Applied'?"Genral Secretary":next : null,
         responseMessage,
       });
 
@@ -169,7 +195,7 @@ const FacultyDashboard = () => {
     return (
       <ul className="list-group">
         {requests.req.map((r, i) => {
-          const pdfFile = requests.pdf.find((p) => p.pdf === r.file);
+          const pdfFile = requests.pdf.find((p) => p.filename === r.file);
           return (
             <li key={i} className="list-group-item">
               <p>
@@ -178,7 +204,10 @@ const FacultyDashboard = () => {
               <p>
                 <strong>File:</strong>{" "}
                 {pdfFile ? (
-                  <button className="btn btn-primary" onClick={() => showPdf(pdfFile.pdf)}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => showPdf(pdfFile.fileUrl)}
+                  >
                     View Pdf
                   </button>
                 ) : (
@@ -192,13 +221,13 @@ const FacultyDashboard = () => {
                 <>
                   <button
                     onClick={() => handleRequest(r.id, "approve")}
-                    className="btn btn-success"
+                    className="btn btn-success mx-2"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleRequest(r.id, "reject")}
-                    className="btn btn-danger"
+                    className="btn btn-danger mx-2"
                   >
                     Reject
                   </button>

@@ -76,14 +76,23 @@ app.get("/get-file/:filename", (req, res) => {
 });
 
 // Retrieve all files metadata
-app.get("/get-files", async (req, res) => {
+app.post("/get-files", async (req, res) => {
+  const {names} = req.body;
   try {
+    let metadata;
     // Retrieve all metadata from the database
-    const metadata = await PdfSchemaModel.find({});
-    if (metadata.length === 0) {
-      return res.status(404).json({ status: "error", message: "No files found" });
+    if(!names){
+      metadata = await PdfSchemaModel.find({});
+      if (metadata.length === 0) {
+        return res.status(404).json({ status: "error", message: "No files found" });
+      }
     }
-
+    else{
+      metadata = await PdfSchemaModel.find({pdf:{$in:names}});
+      if (metadata.length === 0) {
+        return res.status(404).json({ status: "error", message: "No files found" });
+      }
+    }
     // Prepare an array to store file data along with metadata
     const filesWithMetadata = [];
 
@@ -107,6 +116,7 @@ app.get("/get-files", async (req, res) => {
 
         // Add metadata and file buffer to the response array
         filesWithMetadata.push({
+          id:data.id,
           title: data.title,
           filename: file[0].filename,
           contentType: file[0].contentType,

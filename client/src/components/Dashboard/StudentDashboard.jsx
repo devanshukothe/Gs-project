@@ -95,7 +95,7 @@ const StudentDashboard = () => {
 
   const fetchUploadedFiles = async () => {
     try {
-      const result = await axios.get("http://localhost:5000/get-files");
+      const result = await axios.post("http://localhost:5000/get-files");
       if (result.data?.files) {
         const files = result.data.files.map((file) => ({
           ...file,
@@ -182,8 +182,8 @@ const StudentDashboard = () => {
               >
                 <option value="">Select Faculty</option>
                 {facultyList.map((faculty, index) => (
-                  <option key={index} value={faculty.Name}>
-                    {faculty.Name}
+                  <option key={index} value={faculty.name}>
+                    {faculty.name}
                   </option>
                 ))}
               </select>
@@ -260,11 +260,11 @@ const StudentDashboard = () => {
                       <h6 className="card-title">Title: {data.title}</h6>
                       <button
                         className="btn btn-primary mb-2"
-                        onClick={() => {toggleFileViewer(data.filename);}}
+                        onClick={() => {toggleFileViewer(data.id);}}
                       >
-                        {showFileViewer[data.filename] ? "Hide Pdf" : "Show Pdf"}
+                        {showFileViewer[data.id] ? "Hide Pdf" : "Show Pdf"}
                       </button>
-                      {showFileViewer[data.filename] && (
+                      {showFileViewer[data.id] && (
                         <FileViewer file={data} />
                       )}
                     </div>
