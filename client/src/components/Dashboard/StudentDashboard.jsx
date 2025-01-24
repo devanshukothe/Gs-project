@@ -3,7 +3,9 @@ import {
   addDoc,
   collection,
   Timestamp,
+  where,
   getDocs,
+  query,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import axios from "axios";
@@ -15,6 +17,7 @@ const StudentDashboard = () => {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [metaData, setMetadata] = useState([]);
   const [sequence, setSequence] = useState({
     faculty: "",
     secratory: "",
@@ -54,6 +57,7 @@ const StudentDashboard = () => {
 
         // Add request details to Firestore
         await addDoc(collection(db, "Requests"), {
+          title: title,
           Author: auth.currentUser.email,
           file: file.name,
           dean: sequence.dean !== "" ? sequence.dean : "Not Applied",
@@ -65,8 +69,8 @@ const StudentDashboard = () => {
             sequence.faculty !== ""
               ? sequence.faculty
               : sequence.secratory !== ""
-              ? sequence.secratory
-              : sequence.GS,
+                ? sequence.secratory
+                : sequence.GS,
           createdAt: Timestamp.now(),
         });
 
@@ -105,13 +109,39 @@ const StudentDashboard = () => {
             })
           ),
         }));
-        setUploadedFiles(files);
+        // setUploadedFiles(files);
+        const fileNames = files.map((file) => file.filename)
+        const metaData = await getReuestInfo(fileNames);
+        setMetadata((prev)=>metaData);
+        setUploadedFiles((prev)=>files);
+        // console.log(metaData, files);
       }
     } catch (error) {
       console.error("Error fetching uploaded PDFs:", error);
     }
   };
-
+  const getReuestInfo = async (filenames) => {
+    try {
+      let metaData= [];
+      for (let index = 0; index < filenames.length; index++) {
+        const filename = filenames[index];
+        const q = query(collection(db, "Requests"), where("file", "==", filename));
+        const dataSnapshot = await getDocs(q);
+        if (!dataSnapshot.empty) {
+          metaData = await Promise.all(
+            dataSnapshot.docs.map(async(doc)=>{
+              return doc.data();
+            })
+          )
+        } else {
+          console.log("No matching documents found.");
+        }
+      }
+      return metaData;
+    } catch (error) {
+      console.error(error)
+    }
+  }
   useEffect(() => {
     async function getFaculty() {
       const fC = await getDocs(collection(db, "Faculty"));
@@ -251,16 +281,22 @@ const StudentDashboard = () => {
       <div className="output-div mt-4 d-flex flex-column justify-content-center">
         <h4>Uploaded PDFs</h4>
         <div className="row">
-          {uploadedFiles.length === 0
+          {uploadedFiles?.length === 0
             ? "No files uploaded."
-            : uploadedFiles.map((data, i) => (
+            : uploadedFiles?.map((data, i) =>{
+              const req = metaData.find((doc)=>doc.file===data.filename);
+              return  (
+              
                 <div className="col-md-4 mb-3 w-100" key={i}>
                   <div className="card ">
                     <div className="card-body w-100">
                       <h6 className="card-title">Title: {data.title}</h6>
+                      <h6 className="card-title">Author: {req? req.Author:"Error"}</h6>
+                      <h6 className="card-title">Status: {req? req.responseMessage:"Error"}</h6>
+                      <h6 className="card-title">Updated At: {req? req.updatedAt? req.updatedAt : "Error":"Error"}</h6>
                       <button
                         className="btn btn-primary mb-2"
-                        onClick={() => {toggleFileViewer(data.id);}}
+                        onClick={() => { toggleFileViewer(data.id); }}
                       >
                         {showFileViewer[data.id] ? "Hide Pdf" : "Show Pdf"}
                       </button>
@@ -270,7 +306,8 @@ const StudentDashboard = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )
+            })}
         </div>
       </div>
     </div>

@@ -158,7 +158,7 @@ const SecretaryDashboard = () => {
     try {
       const requestRef = doc(db, "Requests", requestId);
       let next;
-      if (logData.role === "Genral") {
+      if (logData.role === "General Secretary") {
         next = requests.pending.req.find((req) => req.id === requestId)?.dean;
       } else {
         next = "General Secretary";
@@ -169,13 +169,14 @@ const SecretaryDashboard = () => {
           : `Rejected by ${logData.role} secretary`;
       const responseMessage =
         action === "approve"
-          ? `Your request has been approved by ${logData.role} secretary and forwarded to the ${next}.`
-          : `Your request has been rejected ${logData.role} secretary`;
+          ? `Your request has been approved by ${logData.role}  and forwarded to the ${logData.role==="General Secretary"?"Dean "+next :next}.`
+          : `Your request has been rejected ${logData.role} `;
 
       await updateDoc(requestRef, {
         status,
         currentApprover: action === "approve" ? next : null,
         responseMessage,
+        updatedAt:Timestamp.now()
       });
 
       await addDoc(

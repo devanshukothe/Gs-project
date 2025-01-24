@@ -173,6 +173,7 @@ const FacultyDashboard = () => {
         status,
         currentApprover: action === "approve" ? next==='Not Applied'?"Genral Secretary":next : null,
         responseMessage,
+        updatedAt:Timestamp.now()
       });
 
       await addDoc(
