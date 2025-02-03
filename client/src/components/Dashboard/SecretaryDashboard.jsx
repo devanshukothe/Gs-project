@@ -93,19 +93,21 @@ const SecretaryDashboard = () => {
           );
 
           const unsubscribe = onSnapshot(pendingQuery, async (snapshot) => {
+            
             const fetchedPending = snapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
             }));
 
-            const names = fetchedPending.map((req) => req.file);
+            const names = fetchedPending.map((req) => req.file ? req.file : "");
             const pdfs = await fetchUploadedFiles(names);
             setRequests((prev) => ({
               ...prev,
               pending: { req: fetchedPending, pdf: pdfs },
             }));
+            
           });
-
+          
           // Fetch forwarded requests
           const forwardedSnapshot = await getDocs(
             collection(db, "Secratory", logData.email, "approveRequests")
@@ -118,6 +120,7 @@ const SecretaryDashboard = () => {
               return request.data();
             })
           );
+          
           const fnames = forwardedRequests.map((req) => req.file);
           const fpdfs = await fetchUploadedFiles(fnames);
           setRequests((prev) => ({

@@ -21,7 +21,7 @@ const StudentDashboard = () => {
   const [sequence, setSequence] = useState({
     faculty: "",
     secratory: "",
-    GS: "genralsecretary@sggs.ac.in",
+    GS: "generalsecretary@sggs.ac.in",
     dean: "",
   });
   const [facultyList, setFacultyList] = useState([]);
@@ -77,7 +77,7 @@ const StudentDashboard = () => {
         setSequence({
           faculty: "",
           secratory: "",
-          GS: "genralsecretary@sggs.ac.in",
+          GS: "generalsecretary@sggs.ac.in",
           dean: "",
         });
         setTitle("");
@@ -293,12 +293,12 @@ const StudentDashboard = () => {
                     <div className="card-body w-100">
                       <h6 className="card-title">Title: {data.title}</h6>
                       <h6 className="card-title">Author: {req ? req.Author : "Error"}</h6>
-                      <h6 className="card-title">Status: {req ? req.responseMessage : "Error"}</h6>
+                      <h6 className="card-title">Status: {req ? !req.responseMessage? req.status: req.responseMessage: "Error"}</h6>
                       <h6 className="card-title">
                         Updated At:&ensp;
                         {req && req.updatedAt
                           ? new Date(req.updatedAt.seconds * 1000).toLocaleString() // Convert to a readable date
-                          : "Error"}
+                          : "Null"}
                       </h6>
 
                       <button

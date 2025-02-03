@@ -97,8 +97,8 @@ const DeanDashboard = () => {
           collection(db, "Dean", logData.email, "approveRequests")
         );
         const approvedRequests = await Promise.all(
-          approvedSnapshot.docs.map(async (doc) => {
-            const request = await getDoc(doc(db, "Requests", doc.data().requestId));
+          approvedSnapshot.docs.map(async (approvedDoc) => {
+            const request = await getDoc(doc(db, "Requests", approvedDoc.data().requestId));
             return request.data();
           })
         );
@@ -114,8 +114,8 @@ const DeanDashboard = () => {
           collection(db, "Dean", logData.email, "rejectRequests")
         );
         const rejectedRequests = await Promise.all(
-          rejectedSnapshot.docs.map(async (doc) => {
-            const request = await getDoc(doc(db, "Requests", doc.data().requestId));
+          rejectedSnapshot.docs.map(async (rejectedDoc) => {
+            const request = await getDoc(doc(db, "Requests", rejectedDoc.data().requestId));
             return request.data();
           })
         );
