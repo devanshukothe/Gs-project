@@ -196,9 +196,12 @@ const FacultyDashboard = () => {
     return (
       <ul className="list-group">
         {requests.req.map((r, i) => {
-          const pdfFile = requests.pdf.find((p) => p.filename === r.file);
+          const pdfFile = requests?.pdf?.find((p) => p.filename === r.file);
           return (
             <li key={i} className="list-group-item">
+               <p>
+                <strong>Request Subject:</strong> {r.title || "Error"}
+              </p>
               <p>
                 <strong>Request Author:</strong> {r.Author || "Error"}
               </p>
@@ -251,7 +254,7 @@ const FacultyDashboard = () => {
       </section>
 
       <section>
-        <h3>Requests Forwarded to Dean</h3>
+        <h3>Requests Forwarded </h3>
         {renderRequests(requests.forwarded, "forwarded")}
       </section>
 

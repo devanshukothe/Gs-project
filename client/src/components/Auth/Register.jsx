@@ -85,13 +85,14 @@ const Register = () => {
       const fC = await getDocs(collection(db, "Faculty"));
       const facultyData = fC.docs.map((doc) => doc.data());
       setFacultyList(facultyData);
+      console.log(facultyData,facultyList)
     }
     getFaculty();
   }, []);
 
   return (
     <div className="container py-5">
-      <h2 className="text-center mb-4">Register</h2>
+      <h2 className="text-center mb-4">SGGSIE&T Permissions System</h2>
       {!role && (
         <div className="text-center mb-4">
           <select
@@ -112,7 +113,7 @@ const Register = () => {
         </div>
       )}
       {role && (
-        <div className="row justify-content-center">
+        <div className="row justify-content-center mt-4">
           <div className="col-md-6">
             <div className="card shadow">
               <div className="card-body">
@@ -174,8 +175,8 @@ const Register = () => {
                         >
                           <option value="">Select</option>
                           {facultyList.map((faculty, index) => (
-                            <option key={index} value={faculty.Name}>
-                              {faculty.Name}
+                            <option key={index} value={faculty.name}>
+                              {faculty.name}
                             </option>
                           ))}
                         </select>

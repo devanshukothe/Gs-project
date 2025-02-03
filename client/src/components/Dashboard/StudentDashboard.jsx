@@ -111,37 +111,38 @@ const StudentDashboard = () => {
         }));
         // setUploadedFiles(files);
         const fileNames = files.map((file) => file.filename)
-        const metaData = await getReuestInfo(fileNames);
-        setMetadata((prev)=>metaData);
-        setUploadedFiles((prev)=>files);
+        const metaData = await getRequestInfo(fileNames);
+        setMetadata((prev) => metaData);
+        setUploadedFiles((prev) => files);
         // console.log(metaData, files);
       }
     } catch (error) {
       console.error("Error fetching uploaded PDFs:", error);
     }
   };
-  const getReuestInfo = async (filenames) => {
+  const getRequestInfo = async (filenames) => {
     try {
-      let metaData= [];
+      let metaData = [];
+  
       for (let index = 0; index < filenames.length; index++) {
         const filename = filenames[index];
         const q = query(collection(db, "Requests"), where("file", "==", filename));
         const dataSnapshot = await getDocs(q);
+  
         if (!dataSnapshot.empty) {
-          metaData = await Promise.all(
-            dataSnapshot.docs.map(async(doc)=>{
-              return doc.data();
-            })
-          )
+          const docsData = dataSnapshot.docs.map((doc) => doc.data());
+          metaData = metaData.concat(docsData); 
         } else {
-          console.log("No matching documents found.");
+          console.log(`No matching documents found for: ${filename}`);
         }
       }
+
       return metaData;
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+  };
+  
   useEffect(() => {
     async function getFaculty() {
       const fC = await getDocs(collection(db, "Faculty"));
@@ -283,17 +284,23 @@ const StudentDashboard = () => {
         <div className="row">
           {uploadedFiles?.length === 0
             ? "No files uploaded."
-            : uploadedFiles?.map((data, i) =>{
-              const req = metaData.find((doc)=>doc.file===data.filename);
-              return  (
-              
+            : uploadedFiles?.map((data, i) => {
+              const req = metaData.find((doc) => doc.file === data.filename);
+              return (
+
                 <div className="col-md-4 mb-3 w-100" key={i}>
                   <div className="card ">
                     <div className="card-body w-100">
                       <h6 className="card-title">Title: {data.title}</h6>
-                      <h6 className="card-title">Author: {req? req.Author:"Error"}</h6>
-                      <h6 className="card-title">Status: {req? req.responseMessage:"Error"}</h6>
-                      <h6 className="card-title">Updated At: {req? req.updatedAt? req.updatedAt : "Error":"Error"}</h6>
+                      <h6 className="card-title">Author: {req ? req.Author : "Error"}</h6>
+                      <h6 className="card-title">Status: {req ? req.responseMessage : "Error"}</h6>
+                      <h6 className="card-title">
+                        Updated At:&ensp;
+                        {req && req.updatedAt
+                          ? new Date(req.updatedAt.seconds * 1000).toLocaleString() // Convert to a readable date
+                          : "Error"}
+                      </h6>
+
                       <button
                         className="btn btn-primary mb-2"
                         onClick={() => { toggleFileViewer(data.id); }}

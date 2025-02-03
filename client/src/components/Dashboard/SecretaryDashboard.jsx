@@ -165,8 +165,8 @@ const SecretaryDashboard = () => {
       }
       const status =
         action === "approve"
-          ? `Approved by ${logData.role} secretary`
-          : `Rejected by ${logData.role} secretary`;
+          ? `Approved by ${logData.role} `
+          : `Rejected by ${logData.role} `;
       const responseMessage =
         action === "approve"
           ? `Your request has been approved by ${logData.role}  and forwarded to the ${logData.role==="General Secretary"?"Dean "+next :next}.`
@@ -204,6 +204,9 @@ const SecretaryDashboard = () => {
           const pdfFile = requests.pdf.find((p) => p.filename === r.file);
           return (
             <li key={i} className="list-group-item">
+               <p>
+                <strong>Request Subject :</strong> {r.title || "Error"}
+              </p>
               <p>
                 <strong>Request Author:</strong> {r.Author || "Error"}
               </p>
@@ -256,7 +259,7 @@ const SecretaryDashboard = () => {
     </section>
 
     <section>
-      <h3>Requests Forwarded to Dean</h3>
+      <h3>Requests Forwarded </h3>
       {renderRequests(requests.forwarded, "forwarded")}
     </section>
 

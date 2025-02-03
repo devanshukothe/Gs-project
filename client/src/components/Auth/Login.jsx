@@ -40,7 +40,8 @@ const Login = () => {
   };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center vh-100">
+    <div className="container d-flex flex-column   align-items-center justify-content-center vh-100">
+    <h2 className="mb-4 my-4">SGGSIE&T Permissions System</h2>
       <div className="card shadow p-4" style={{ maxWidth: "500px", width: "100%" }}>
         <h2 className="text-center mb-4">Login</h2>
         {error && <div className="alert alert-danger">{error}</div>}

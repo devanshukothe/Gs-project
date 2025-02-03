@@ -84,6 +84,7 @@ const DeanDashboard = () => {
             ...doc.data(),
           }));
           const names = fetchedPending.map((req) => req.file);
+          console.log(names, fetchedPending);
           const pdfs = await fetchUploadedFiles(names);
           setRequests((prev) => ({
             ...prev,
@@ -93,7 +94,7 @@ const DeanDashboard = () => {
   
         // Fetch approved requests
         const approvedSnapshot = await getDocs(
-          collection(doc(db, "Dean", logData.email, "approvedRequests"))
+          collection(db, "Dean", logData.email, "approveRequests")
         );
         const approvedRequests = await Promise.all(
           approvedSnapshot.docs.map(async (doc) => {
@@ -110,7 +111,7 @@ const DeanDashboard = () => {
   
         // Fetch rejected requests
         const rejectedSnapshot = await getDocs(
-          collection(doc(db, "Dean", logData.email, "rejectedRequests"))
+          collection(db, "Dean", logData.email, "rejectRequests")
         );
         const rejectedRequests = await Promise.all(
           rejectedSnapshot.docs.map(async (doc) => {
@@ -161,7 +162,7 @@ const DeanDashboard = () => {
       });
 
       await addDoc(
-        collection(db, "Dean", logData.email, `${action}edRequests`),
+        collection(db, "Dean", logData.email, `${action}Requests`),
         {
           requestId,
           timestamp: Timestamp.now(),
@@ -185,6 +186,9 @@ const DeanDashboard = () => {
           const pdfFile = requests.pdf.find((p) => p.filename === r.file);
           return (
             <li key={i} className="list-group-item">
+                <p>
+                <strong>Request Subject:</strong> {r.title || "Error"}
+              </p>
               <p>
                 <strong>Request Author:</strong> {r.Author || "Error"}
               </p>
@@ -229,7 +233,7 @@ const DeanDashboard = () => {
 
   return (
     <div className="container">
-      <h2 className="my-4">{logData ? logData.role : "Dean"} Dashboard</h2>
+      <h2 className="my-4">{logData ? "Dean "+ logData.role : "Dean"} Dashboard</h2>
 
       <section>
         <h3>Pending Requests</h3>
