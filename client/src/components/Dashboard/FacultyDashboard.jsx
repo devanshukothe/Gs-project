@@ -13,6 +13,8 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import RejectedRequests from "./rejectedRequest";
+import ApprovedRequests from "./ApprovedRequests";
 
 const FacultyDashboard = () => {
   const [requests, setRequests] = useState({
@@ -21,8 +23,8 @@ const FacultyDashboard = () => {
     rejected: { req: [], pdf: [] },
   });
   const [logData, setLogData] = useState(null);
+  const [feedback, setFeedback] = useState("");
 
-  // Fetch faculty data once the component mounts
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -50,40 +52,31 @@ const FacultyDashboard = () => {
       const result = await fetch(`http://localhost:5000/get-files`, {
         method: "POST",
         body: JSON.stringify({ names }),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
       const response = await result.json();
-      if (response.status === "ok") {
-        if (response?.files) {
-          const files = response.files.map((file) => ({
-            ...file,
-            fileUrl: URL.createObjectURL(
-              new Blob(
-                [
-                  Uint8Array.from(atob(file.fileContent), (c) =>
-                    c.charCodeAt(0)
-                  ),
-                ],
-                {
-                  type: file.contentType,
-                }
-              )
-            ),
-          }));
-          return files;
-        }
+      if (response.status === "ok" && response?.files) {
+        return response.files.map((file) => ({
+          ...file,
+          fileUrl: URL.createObjectURL(
+            new Blob(
+              [Uint8Array.from(atob(file.fileContent), (c) => c.charCodeAt(0))],
+              {
+                type: file.contentType,
+              }
+            )
+          ),
+        }));
       }
     } catch (error) {
       console.error("Error fetching uploaded PDFs:", error);
     }
   };
 
-  // Fetch all requests when logData is updated
   useEffect(() => {
     if (logData?.name) {
       const fetchRequests = async () => {
         try {
-          // Fetch pending requests
           const pendingQuery = query(
             collection(db, "Requests"),
             where("currentApprover", "==", logData.name)
@@ -97,7 +90,6 @@ const FacultyDashboard = () => {
               }));
               const names = fetchedPending.map((req) => req.file);
               const pdfs = await fetchUploadedFiles(names);
-
               setRequests((prev) => ({
                 ...prev,
                 pending: { req: fetchedPending, pdf: pdfs },
@@ -105,7 +97,6 @@ const FacultyDashboard = () => {
             }
           );
 
-          // Fetch forwarded requests
           const forwardedSnapshot = await getDocs(
             collection(db, "Faculty", logData.email, "approveRequests")
           );
@@ -119,13 +110,11 @@ const FacultyDashboard = () => {
           );
           const fnames = forwardedRequests.map((req) => req.file);
           const fpdfs = await fetchUploadedFiles(fnames);
-
           setRequests((prev) => ({
             ...prev,
             forwarded: { req: forwardedRequests, pdf: fpdfs },
           }));
 
-          // Fetch rejected requests
           const rejectedSnapshot = await getDocs(
             collection(db, "Faculty", logData.email, "rejectRequests")
           );
@@ -139,7 +128,6 @@ const FacultyDashboard = () => {
           );
           const rnames = rejectedRequests.map((req) => req.file);
           const rpdfs = await fetchUploadedFiles(rnames);
-
           setRequests((prev) => ({
             ...prev,
             rejected: { req: rejectedRequests, pdf: rpdfs },
@@ -148,7 +136,6 @@ const FacultyDashboard = () => {
           console.error("Error fetching requests:", error);
         }
       };
-
       fetchRequests();
     }
   }, [logData]);
@@ -160,20 +147,31 @@ const FacultyDashboard = () => {
   const handleRequest = async (requestId, action) => {
     try {
       const requestRef = doc(db, "Requests", requestId);
-      const next =
-        requests.pending.req.find((req) => req.id === requestId)?.secretary;
+      const nextApprover = requests.pending.req.find(
+        (req) => req.id === requestId
+      )?.secretary;
       const status =
         action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
       const responseMessage =
         action === "approve"
-          ? `Your request has been approved by the faculty and forwarded to the ${next==='Not Applied'?"Genral Secretary":next}.`
-          : "Your request has been rejected by the faculty.";
+          ? `Approved and forwarded to ${
+              nextApprover === "Not Applied"
+                ? "General Secretary"
+                : nextApprover
+            }.`
+          : `Rejecte by ${logData.role}`;
 
       await updateDoc(requestRef, {
         status,
-        currentApprover: action === "approve" ? next==='Not Applied'?"Genral Secretary":next : null,
+        currentApprover:
+          action === "approve"
+            ? nextApprover === "Not Applied"
+              ? "General Secretary"
+              : nextApprover
+            : logData.role,
         responseMessage,
-        updatedAt:Timestamp.now()
+        feedback: feedback,
+        updatedAt: Timestamp.now(),
       });
 
       await addDoc(
@@ -185,6 +183,7 @@ const FacultyDashboard = () => {
       );
 
       alert(`Request ${action === "approve" ? "approved" : "rejected"}.`);
+      setFeedback("");
     } catch (error) {
       console.error(`Error ${action} request:`, error);
     }
@@ -199,7 +198,7 @@ const FacultyDashboard = () => {
           const pdfFile = requests?.pdf?.find((p) => p.filename === r.file);
           return (
             <li key={i} className="list-group-item">
-               <p>
+              <p>
                 <strong>Request Subject:</strong> {r.title || "Error"}
               </p>
               <p>
@@ -221,8 +220,15 @@ const FacultyDashboard = () => {
               <p>
                 <strong>Status:</strong> {r.status || "Error"}
               </p>
+            
               {type === "pending" && (
                 <>
+                  <textarea
+                    className="form-control my-2"
+                    placeholder="Enter feedback"
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                  />
                   <button
                     onClick={() => handleRequest(r.id, "approve")}
                     className="btn btn-success mx-2"
@@ -245,23 +251,74 @@ const FacultyDashboard = () => {
   };
 
   return (
-    <div className="container">
-      <h2 className="my-4">Faculty Dashboard</h2>
+    <div className="container-fluid">
+      <div class="row flex-nowrap">
+        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+          <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+            <a
+              href="/"
+              class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none"
+            >
+              <span class="fs-5 d-none d-sm-inline">PROFILE</span>
+            </a>
+            <ul
+              class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
+              id="menu"
+            >
+              <li class="nav-item">
+                <a href="#" class="nav-link align-middle px-0">
+                  <i class="fs-4 bi-house"></i>{" "}
+                  <span class="ms-1 d-none d-sm-inline">ALL REQUESTS</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#submenu1"
+                  data-bs-toggle="collapse"
+                  class="nav-link px-0 align-middle"
+                >
+                  <i class="fs-4 bi-speedometer2"></i>{" "}
+                  <span class="ms-1 d-none d-sm-inline">APPROVED</span>{" "}
+                </a>
+              </li>
+              <li>
+                <a href="#" class="nav-link px-0 align-middle">
+                  <i class="fs-4 bi-table"></i>{" "}
+                  <span class="ms-1 d-none d-sm-inline">REJECTED</span>
+                </a>
+              </li>
+              <hr />
+              <li>
+                <a
+                  href="#submenu3"
+                  data-bs-toggle="collapse"
+                  class="nav-link px-0 align-middle"
+                >
+                  <i class="fs-4 bi-grid"></i>{" "}
+                  <span class="ms-1 d-none d-sm-inline">SIGNOUT</span>{" "}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+    
+        <div className="class=" col py-3>
+          <h2 className="my-4">Faculty Dashboard</h2>
 
-      <section>
-        <h3>Pending Requests</h3>
-        {renderRequests(requests.pending, "pending")}
-      </section>
-
-      <section>
-        <h3>Requests Forwarded </h3>
-        {renderRequests(requests.forwarded, "forwarded")}
-      </section>
-
-      <section>
-        <h3>Requests Rejected</h3>
-        {renderRequests(requests.rejected, "rejected")}
-      </section>
+          <section>
+            <h3>Pending Requests</h3>
+            {renderRequests(requests.pending, "pending")}
+          </section>
+          <section>
+            
+            <ApprovedRequests />
+          </section>
+          <section>
+            <h3>Requests Rejected</h3>
+            {renderRequests(requests.rejected, "rejected")}
+          </section>
+        </div>
+      </div>
     </div>
   );
 };
