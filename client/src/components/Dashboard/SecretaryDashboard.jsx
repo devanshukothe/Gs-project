@@ -276,7 +276,10 @@ const SecretaryDashboard = () => {
               class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none"
             >
               <span class="fs-5 d-none d-sm-inline">PROFILE</span>
+                           
+               
             </a>
+            <h6>{auth.currentUser.email}</h6>
             <ul
               class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
               id="menu"

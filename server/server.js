@@ -10,7 +10,7 @@ const dbPassword = encodeURIComponent("momdaddk21");
 const dbURI = `mongodb+srv://devanshukothe123:${dbPassword}@permission-app.qyvm4.mongodb.net/Permission-App?retryWrites=true&w=majority`;
 
 mongoose
-  .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, })
   .then(() => console.log("Connected to database"))
   .catch((err) => console.log(err));
 

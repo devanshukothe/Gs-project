@@ -10,6 +10,9 @@ import {
 import { db, auth } from "../../firebase/firebase";
 import axios from "axios";
 import FileViewer from "../FileViewer"; // Import the FileViewer component
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 
 const StudentDashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -177,6 +180,26 @@ const StudentDashboard = () => {
       [pdfId]: !prev[pdfId],
     }));
   };
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/login"); // Redirect if not logged in
+      }
+    });
+  }, [navigate]);
+  
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Sign out from Firebase
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Logout Failed:", error.message);
+    }
+  };
+
 return (
     <div className="container-fluid">
       <div class="row flex-nowrap">
@@ -187,7 +210,9 @@ return (
               class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none"
             >
               <span class="fs-5 d-none d-sm-inline">PROFILE</span>
+             
             </a>
+            <h6>{auth.currentUser.email}</h6>
             <ul
               class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
               id="menu"
@@ -222,7 +247,7 @@ return (
                   class="nav-link px-0 align-middle"
                 >
                   <i class="fs-4 bi-grid"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">SIGNOUT</span>{" "}
+                  <span class="ms-1 d-none d-sm-inline" onClick={handleLogout} className="btn btn-danger">SIGNOUT</span>{" "}
                 </a>
               </li>
             </ul>

@@ -261,6 +261,7 @@ const FacultyDashboard = () => {
             >
               <span class="fs-5 d-none d-sm-inline">PROFILE</span>
             </a>
+            <h6>{auth.currentUser.email}</h6>
             <ul
               class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
               id="menu"
