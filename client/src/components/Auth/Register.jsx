@@ -81,6 +81,8 @@ const Register = () => {
           : { ...otherDetails, role };
 
       await setDoc(doc(db, collectionName, user.email), data);
+          localStorage.setItem("userData", JSON.stringify({ ...data, uid: user.uid }));
+
       navigate("/login");
     } catch (error) {
       console.error("Error registering:", error);

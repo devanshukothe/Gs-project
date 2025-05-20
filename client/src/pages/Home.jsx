@@ -21,7 +21,7 @@ const Home = () => {
     <Navbar />
     <div className="min-h-screen bg-white text-black px-6 py-10">
       <div className="max-w-6xl mx-auto text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to the GS Dashboard</h1>
+        <h1 className="text-4xl font-bold mb-4">Welcome to the SGGS-PermitFlow Dashboard</h1>
         <p className="text-lg text-gray-600 mb-10">
           A centralized platform for managing student activities, approvals, feedback, and more — designed to simplify your college journey.
         </p>

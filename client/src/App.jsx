@@ -12,6 +12,7 @@ import { useAuth } from './contexts/AuthContext';  // Updated import path
 import { Navigate } from 'react-router-dom';  // Import Navigate from react-router-dom
 import Login from './components/Auth/Login';
 import SecretaryDashboard from './components/Dashboard/SecretaryDashboard';
+import Profile from "./pages/Profile";
 
 function App() {
   // const { user } = useAuth();  
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Protected Routes */}

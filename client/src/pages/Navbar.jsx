@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react'; // make sure you have lucide-react installed
+import { Heading1, Menu, X } from 'lucide-react';
+
+
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+  
   return (
-    <nav className="bg-white border-b shadow-sm text-black px-6 py-4 sticky top-0 z-50">
+    <nav className="bg-white border-b shadow-sm text-black px-3 py-2 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold">GS Dashboard</Link>
+        <Link to="/" className="text-2xl font-bold">SGGS-PermitFlow</Link>
 
         {/* Desktop Nav */}
         <ul className="hidden md:flex space-x-8 text-sm font-medium list-none">
@@ -18,8 +31,11 @@ export default function Navbar() {
         </ul>
 
         {/* Logout Button */}
-        <button className="hidden md:block bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
-          Logout
+        <button className="hidden md:block bg-black text-white px-4 py-2 rounded hover:bg-gray-800 list-none">  {user ? (
+        <p>Welcome, {user.email}</p>
+      ) : (
+         <NavItem  to="/login" label="login" />
+      )}       
         </button>
 
         {/* Hamburger for mobile */}
@@ -38,7 +54,11 @@ export default function Navbar() {
           <NavItem to="/profile" label="Profile" onClick={() => setMenuOpen(false)} />
           <li>
             <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 w-full max-w-xs mx-auto">
-              Logout
+               {user ? (
+        <p>Welcome, {user.email}</p>
+      ) : (
+        <p>Login</p>
+      )}
             </button>
           </li>
         </ul>
