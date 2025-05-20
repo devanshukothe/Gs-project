@@ -16,6 +16,7 @@ import SecretaryDashboard from './components/Dashboard/SecretaryDashboard';
 function App() {
   // const { user } = useAuth();  
   return (
+     
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -39,6 +40,7 @@ function App() {
         <Route path="/secretary" element={<SecretaryDashboard/>} />
       </Routes>
     </Router>
+    
   );
 }
 

@@ -189,7 +189,6 @@ const StudentDashboard = () => {
       }
     });
   }, [navigate]);
-  
 
   const handleLogout = async () => {
     try {
@@ -200,228 +199,174 @@ const StudentDashboard = () => {
     }
   };
 
-return (
-    <div className="container-fluid">
-      <div class="row flex-nowrap">
-        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-          <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-            <a
-              href="/"
-              class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none"
-            >
-              <span class="fs-5 d-none d-sm-inline">PROFILE</span>
-             
-            </a>
-            <h6>{auth.currentUser.email}</h6>
-            <ul
-              class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
-              id="menu"
-            >
-              <li class="nav-item">
-                <a href="#" class="nav-link align-middle px-0">
-                  <i class="fs-4 bi-house"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">ALL REQUESTS</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#submenu1"
-                  data-bs-toggle="collapse"
-                  class="nav-link px-0 align-middle"
-                >
-                  <i class="fs-4 bi-speedometer2"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">APPROVED</span>{" "}
-                </a>
-              </li>
-              <li>
-                <a href="#" class="nav-link px-0 align-middle">
-                  <i class="fs-4 bi-table"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">REJECTED</span>
-                </a>
-              </li>
-              <hr/>
-              <li>
-                <a
-                  href="#submenu3"
-                  data-bs-toggle="collapse"
-                  class="nav-link px-0 align-middle"
-                >
-                  <i class="fs-4 bi-grid"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline" onClick={handleLogout} className="btn btn-danger">SIGNOUT</span>{" "}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="class=" col py-3>
-          <h2 className="text-center">Club Dashboard</h2>
-          {show ? (
-            <div className="card p-4">
-              <form onSubmit={handleRequest} ref={formRef}>
-                <h4>Upload PDF</h4>
-                <hr />
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="file"
-                    className="form-control"
-                    accept="application/pdf"
-                    onChange={(e) => setFile(e.target.files[0])}
-                    required
-                  />
-                </div>
-                <h3>Select Sequence (Priority Wise)</h3>
-                <small className="text-muted">
-                  Leave empty if not applicable
-                </small>
-                <div className="mb-3">
-                  <label>1</label>
-                  <select
-                    className="form-select"
-                    value={sequence.faculty}
-                    name="faculty"
-                    onChange={(e) =>
-                      setSequence({ ...sequence, faculty: e.target.value })
-                    }
-                  >
-                    <option value="">Select Faculty</option>
-                    {facultyList.map((faculty, index) => (
-                      <option key={index} value={faculty.name}>
-                        {faculty.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label>2</label>
-                  <select
-                    className="form-select"
-                    value={sequence.secratory}
-                    name="secratory"
-                    onChange={(e) =>
-                      setSequence({ ...sequence, secratory: e.target.value })
-                    }
-                  >
-                    <option value="">Select Secretary</option>
-                    {secratoryList.map((secratory, index) => {
-                      if (secratory.role !== "Genral") {
-                        return (
-                          <option key={index} value={secratory.role}>
-                            {secratory.role}
-                          </option>
-                        );
-                      }
-                    })}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label>3</label>
-                  <select
-                    className="form-select"
-                    value={sequence.dean}
-                    name="dean"
-                    onChange={(e) =>
-                      setSequence({ ...sequence, dean: e.target.value })
-                    }
-                  >
-                    <option value="">Select Dean</option>
-                    {deanList.map((dean, index) => (
-                      <option key={index} value={dean.role}>
-                        {dean.role}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? "Submitting..." : "Submit Request"}
-                </button>
-              </form>
+  return (
+    <div className="class=" col py-3>
+      <h2 className="text-center ">Club Dashboard</h2>
+      {show ? (
+        <div className="card p-4">
+          <form onSubmit={handleRequest} ref={formRef}>
+            <h4>Upload PDF</h4>
+            <hr />
+            <div className="mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
             </div>
-          ) : (
-            <div className="text-center">
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={() => setShow((prev) => true)}
+            <div className="mb-3">
+              <input
+                type="file"
+                className="form-control"
+                accept="application/pdf"
+                onChange={(e) => setFile(e.target.files[0])}
+                required
+              />
+            </div>
+            <h3>Select Sequence (Priority Wise)</h3>
+            <small className="text-muted">Leave empty if not applicable</small>
+            <div className="mb-3">
+              <label>1</label>
+              <select
+                className="form-select"
+                value={sequence.faculty}
+                name="faculty"
+                onChange={(e) =>
+                  setSequence({ ...sequence, faculty: e.target.value })
+                }
               >
-                New Request
-              </button>
+                <option value="">Select Faculty</option>
+                {facultyList.map((faculty, index) => (
+                  <option key={index} value={faculty.name}>
+                    {faculty.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-          <div className="output-div mt-4 d-flex flex-column justify-content-center">
-            <h4>Uploaded PDFs</h4>
-            <div className="row">
-              {uploadedFiles?.length === 0
-                ? "No files uploaded."
-                : uploadedFiles?.map((data, i) => {
-                    const req = metaData.find(
-                      (doc) => doc.file === data.filename
-                    );
+            <div className="mb-3">
+              <label>2</label>
+              <select
+                className="form-select"
+                value={sequence.secratory}
+                name="secratory"
+                onChange={(e) =>
+                  setSequence({ ...sequence, secratory: e.target.value })
+                }
+              >
+                <option value="">Select Secretary</option>
+                {secratoryList.map((secratory, index) => {
+                  if (secratory.role !== "Genral") {
                     return (
-                      <div className="col-md-4 mb-3 w-100" key={i}>
-                        <div className="card ">
-                          <div className="card-body w-100">
-                            <h6 className="card-title">Title: {data.title}</h6>
-                            <h6 className="card-title">
-                              Author: {req ? req.Author : "Error"}
-                            </h6>
-                            <h6 className="card-title">
-                              Status:{" "}
-                              {req
-                                ? !req.responseMessage
-                                  ? req.status
-                                  : req.responseMessage
-                                : "Error"}
-                            </h6>
-                            <h6 className="card-title">
-                              Updated At:&ensp;
-                              {req && req.updatedAt
-                                ? new Date(
-                                    req.updatedAt.seconds * 1000
-                                  ).toLocaleString() // Convert to a readable date
-                                : "Null"}
-                            </h6>
-                            {req?.feedback ? (
-                              <>
-                                <h6>Feedback: {req.feedback}</h6>
-                                <h6>Given by: {req.currentApprover}</h6>
-                              </>
-                            ) : (
-                              ""
-                            )}
-                            <button
-                              className="btn btn-primary mb-2"
-                              onClick={() => {
-                                toggleFileViewer(data.id);
-                              }}
-                            >
-                              {showFileViewer[data.id]
-                                ? "Hide Pdf"
-                                : "Show Pdf"}
-                            </button>
-                            {showFileViewer[data.id] && (
-                              <FileViewer file={data} />
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      <option key={index} value={secratory.role}>
+                        {secratory.role}
+                      </option>
                     );
-                  })}
+                  }
+                })}
+              </select>
             </div>
-          </div>
+            <div className="mb-3">
+              <label>3</label>
+              <select
+                className="form-select"
+                value={sequence.dean}
+                name="dean"
+                onChange={(e) =>
+                  setSequence({ ...sequence, dean: e.target.value })
+                }
+              >
+                <option value="">Select Dean</option>
+                {deanList.map((dean, index) => (
+                  <option key={index} value={dean.role}>
+                    {dean.role}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit Request"}
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={() => setShow((prev) => true)}
+          >
+            New Request
+          </button>
+        </div>
+      )}
+      <div className="output-div mt-4 d-flex flex-column justify-content-center">
+        <h4>Uploaded PDFs</h4>
+        <div className="row">
+          {uploadedFiles?.length === 0
+            ? "No files uploaded."
+            : uploadedFiles?.map((data, i) => {
+                const req = metaData.find((doc) => doc.file === data.filename);
+                return (
+                  <div className="col-md-4 mb-3 w-100" key={i}>
+                    <div className="card ">
+                      <div className="card-body w-100">
+                        <h6 className="card-title">Title: {data.title}</h6>
+                        <h6 className="card-title">
+                          Author: {req ? req.Author : "Error"}
+                        </h6>
+                        <h6 className="card-title">
+                          Status:{" "}
+                          {req
+                            ? !req.responseMessage
+                              ? req.status
+                              : req.responseMessage
+                            : "Error"}
+                        </h6>
+                        <h6 className="card-title">
+                          Updated At:&ensp;
+                          {req && req.updatedAt
+                            ? new Date(
+                                req.updatedAt.seconds * 1000
+                              ).toLocaleString() // Convert to a readable date
+                            : "Null"}
+                        </h6>
+                        <h6 className="card-title">
+                          Created At:&ensp;
+                          {req && req.createdAt
+                            ? new Date(
+                                req.createdAt.seconds * 1000
+                              ).toLocaleString() // Convert to a readable date
+                            : "Null"}
+                        </h6>
+                        {req?.feedback ? (
+                          <>
+                            <h6>Feedback: {req.feedback}</h6>
+                            <h6>Given by: {req.currentApprover}</h6>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                        <button
+                          className="btn btn-primary mb-2"
+                          onClick={() => {
+                            toggleFileViewer(data.id);
+                          }}
+                        >
+                          {showFileViewer[data.id] ? "Hide Pdf" : "Show Pdf"}
+                        </button>
+                        {showFileViewer[data.id] && <FileViewer file={data} />}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
         </div>
       </div>
     </div>

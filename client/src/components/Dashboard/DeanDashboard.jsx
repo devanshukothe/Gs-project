@@ -185,7 +185,7 @@ const DeanDashboard = () => {
     if (requests.req.length === 0) {
       return <p>No requests {type}.</p>;
     }
-  
+
     return (
       <ul className="list-group">
         {requests.req.map((r, i) => {
@@ -247,76 +247,25 @@ const DeanDashboard = () => {
 
   return (
     <div className="container-fuild">
-      <div class="row flex-nowrap">
-        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-          <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-            <a
-              href="/"
-              class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none"
-            >
-              <span class="fs-5 d-none d-sm-inline">PROFILE</span>
-            </a>
-            <h6>{auth.currentUser.email}</h6>
-            <ul
-              class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
-              id="menu"
-            >
-              <li class="nav-item">
-                <a href="#" class="nav-link align-middle px-0">
-                  <i class="fs-4 bi-house"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">ALL REQUESTS</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#submenu1"
-                  data-bs-toggle="collapse"
-                  class="nav-link px-0 align-middle"
-                >
-                  <i class="fs-4 bi-speedometer2"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">APPROVED</span>{" "}
-                </a>
-              </li>
-              <li>
-                <a href="#" class="nav-link px-0 align-middle">
-                  <i class="fs-4 bi-table"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">REJECTED</span>
-                </a>
-              </li>
-              <hr />
-              <li>
-                <a
-                  href="#submenu3"
-                  data-bs-toggle="collapse"
-                  class="nav-link px-0 align-middle"
-                >
-                  <i class="fs-4 bi-grid"></i>{" "}
-                  <span class="ms-1 d-none d-sm-inline">SIGNOUT</span>{" "}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="col py-2">
-          <h2 className="my-4">
-            {logData ? "Dean " + logData.role : "Dean"} Dashboard
-          </h2>
+      <div className="col py-2">
+        <h2 className="my-4">
+          {logData ? "Dean " + logData.role : "Dean"} Dashboard
+        </h2>
 
-          <section>
-            <h3>Pending Requests</h3>
-            {renderRequests(requests.pending, "pending")}
-          </section>
+        <section>
+          <h3>Pending Requests</h3>
+          {renderRequests(requests.pending, "pending")}
+        </section>
 
-          <section>
-            <h3>Approved Requests</h3>
-            {renderRequests(requests.approved, "approved")}
-          </section>
+        <section>
+          <h3>Approved Requests</h3>
+          {renderRequests(requests.approved, "approved")}
+        </section>
 
-          <section>
-            <h3>Rejected Requests</h3>
-            {renderRequests(requests.rejected, "rejected")}
-          </section>
-        </div>
+        <section>
+          <h3>Rejected Requests</h3>
+          {renderRequests(requests.rejected, "rejected")}
+        </section>
       </div>
     </div>
   );
