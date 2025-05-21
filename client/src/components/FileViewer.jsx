@@ -22,9 +22,9 @@ export default function FileViewer(props) {
         <Document file={props.file.fileUrl} onLoadSuccess={onLoadSuccess} loading="Please wait!!" className={["w-100","d-flex","justify-content-center","container","img-fluid","overflow-scroll","doc"]}>
           <Page pageNumber={pageNumber} className={["w-100","container","img-fluid","pdf-page"]}/>
         </Document>
-        <div className="mt-3 text-center">
+        <div className="mt-3 text-center  text-white">
           <button
-            className="btn btn-secondary me-2"
+            className="btn btn-secondary me-2 "
             disabled={pageNumber <= 1}
             onClick={() => setPageNumber(pageNumber - 1)}
           >

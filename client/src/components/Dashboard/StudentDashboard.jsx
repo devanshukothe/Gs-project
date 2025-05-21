@@ -200,176 +200,205 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="class=" col py-3>
-      <h2 className="text-center ">Club Dashboard</h2>
-      {show ? (
-        <div className="card p-4">
-          <form onSubmit={handleRequest} ref={formRef}>
-            <h4>Upload PDF</h4>
-            <hr />
-            <div className="mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                type="file"
-                className="form-control"
-                accept="application/pdf"
-                onChange={(e) => setFile(e.target.files[0])}
-                required
-              />
-            </div>
-            <h3>Select Sequence (Priority Wise)</h3>
-            <small className="text-muted">Leave empty if not applicable</small>
-            <div className="mb-3">
-              <label>1</label>
-              <select
-                className="form-select"
-                value={sequence.faculty}
-                name="faculty"
-                onChange={(e) =>
-                  setSequence({ ...sequence, faculty: e.target.value })
-                }
-              >
-                <option value="">Select Faculty</option>
-                {facultyList.map((faculty, index) => (
-                  <option key={index} value={faculty.name}>
-                    {faculty.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-3">
-              <label>2</label>
-              <select
-                className="form-select"
-                value={sequence.secratory}
-                name="secratory"
-                onChange={(e) =>
-                  setSequence({ ...sequence, secratory: e.target.value })
-                }
-              >
-                <option value="">Select Secretary</option>
-                {secratoryList.map((secratory, index) => {
-                  if (secratory.role !== "Genral") {
-                    return (
-                      <option key={index} value={secratory.role}>
-                        {secratory.role}
-                      </option>
-                    );
-                  }
-                })}
-              </select>
-            </div>
-            <div className="mb-3">
-              <label>3</label>
-              <select
-                className="form-select"
-                value={sequence.dean}
-                name="dean"
-                onChange={(e) =>
-                  setSequence({ ...sequence, dean: e.target.value })
-                }
-              >
-                <option value="">Select Dean</option>
-                {deanList.map((dean, index) => (
-                  <option key={index} value={dean.role}>
-                    {dean.role}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? "Submitting..." : "Submit Request"}
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="text-center">
-          <button
-            type="button"
-            className="btn btn-success"
-            onClick={() => setShow((prev) => true)}
-          >
-            New Request
-          </button>
-        </div>
-      )}
-      <div className="output-div mt-4 d-flex flex-column justify-content-center">
-        <h4>Uploaded PDFs</h4>
-        <div className="row">
-          {uploadedFiles?.length === 0
-            ? "No files uploaded."
-            : uploadedFiles?.map((data, i) => {
-                const req = metaData.find((doc) => doc.file === data.filename);
-                return (
-                  <div className="col-md-4 mb-3 w-100" key={i}>
-                    <div className="card ">
-                      <div className="card-body w-100">
-                        <h6 className="card-title">Title: {data.title}</h6>
-                        <h6 className="card-title">
-                          Author: {req ? req.Author : "Error"}
-                        </h6>
-                        <h6 className="card-title">
-                          Status:{" "}
-                          {req
-                            ? !req.responseMessage
-                              ? req.status
-                              : req.responseMessage
-                            : "Error"}
-                        </h6>
-                        <h6 className="card-title">
-                          Updated At:&ensp;
-                          {req && req.updatedAt
-                            ? new Date(
-                                req.updatedAt.seconds * 1000
-                              ).toLocaleString() // Convert to a readable date
-                            : "Null"}
-                        </h6>
-                        <h6 className="card-title">
-                          Created At:&ensp;
-                          {req && req.createdAt
-                            ? new Date(
-                                req.createdAt.seconds * 1000
-                              ).toLocaleString() // Convert to a readable date
-                            : "Null"}
-                        </h6>
-                        {req?.feedback ? (
-                          <>
-                            <h6>Feedback: {req.feedback}</h6>
-                            <h6>Given by: {req.currentApprover}</h6>
-                          </>
-                        ) : (
-                          ""
-                        )}
-                        <button
-                          className="btn btn-primary mb-2"
-                          onClick={() => {
-                            toggleFileViewer(data.id);
-                          }}
-                        >
-                          {showFileViewer[data.id] ? "Hide Pdf" : "Show Pdf"}
-                        </button>
-                        {showFileViewer[data.id] && <FileViewer file={data} />}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-        </div>
+    <div className="w-full px-4 py-5 pt-6">
+  <h2 className="text-3xl font-bold text-center mb-6 text-shadow-amber-50">Club Dashboard</h2>
+
+  {show ? (
+  <div className="bg-black text-white shadow-2xl rounded-xl p-8 max-w-3xl mx-auto border border-gray-700">
+    <form onSubmit={handleRequest} ref={formRef} className="space-y-6">
+      <h4 className="text-2xl font-bold">Upload PDF</h4>
+      <hr className="border-t border-gray-600" />
+
+      {/* Title */}
+      <input
+        type="text"
+        className="w-full bg-transparent border border-gray-600 rounded-lg px-4 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
+
+      {/* File Upload */}
+      <input
+        type="file"
+        className="w-full bg-black text-white border border-gray-600 rounded-lg px-4 py-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white file:text-black hover:file:bg-gray-300 transition"
+        accept="application/pdf"
+        onChange={(e) => setFile(e.target.files[0])}
+        required
+      />
+
+      {/* Sequence Info */}
+      <div>
+        <h3 className="font-semibold text-lg">Select Sequence (Priority Wise)</h3>
+        <p className="text-sm text-gray-400">Leave empty if not applicable</p>
       </div>
-    </div>
+
+      {/* Faculty */}
+      <div>
+        <label className="block mb-1 font-medium text-gray-300">1. Faculty</label>
+        <select
+          className="w-full bg-black border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white"
+          value={sequence.faculty}
+          name="faculty"
+          onChange={(e) =>
+            setSequence({ ...sequence, faculty: e.target.value })
+          }
+        >
+          <option value="">Select Faculty</option>
+          {facultyList.map((faculty, index) => (
+            <option key={index} value={faculty.name}>
+              {faculty.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Secretary */}
+      <div>
+        <label className="block mb-1 font-medium text-gray-300">2. Secretary</label>
+        <select
+          className="w-full bg-black border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white"
+          value={sequence.secratory}
+          name="secratory"
+          onChange={(e) =>
+            setSequence({ ...sequence, secratory: e.target.value })
+          }
+        >
+          <option value="">Select Secretary</option>
+          {secratoryList.map((secratory, index) =>
+            secratory.role !== "Genral" ? (
+              <option key={index} value={secratory.role}>
+                {secratory.role}
+              </option>
+            ) : null
+          )}
+        </select>
+      </div>
+
+      {/* Dean */}
+      <div>
+        <label className="block mb-1 font-medium text-gray-300">3. Dean</label>
+        <select
+          className="w-full bg-black border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white"
+          value={sequence.dean}
+          name="dean"
+          onChange={(e) =>
+            setSequence({ ...sequence, dean: e.target.value })
+          }
+        >
+          <option value="">Select Dean</option>
+          {deanList.map((dean, index) => (
+            <option key={index} value={dean.role}>
+              {dean.role}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="w-full bg-white text-black font-semibold py-2 rounded-lg hover:bg-gray-300 transition duration-200"
+        disabled={loading}
+      >
+        {loading ? "Submitting..." : "Submit Request"}
+      </button>
+    </form>
+  </div>
+) : (
+  <div className="text-center">
+    <button
+      type="button"
+      className="bg-white text-black font-semibold px-6 py-2 rounded-lg hover:bg-gray-300 transition duration-200"
+      onClick={() => setShow(true)}
+    >
+      New Request
+    </button>
+  </div>
+)}
+
+
+  {/* Uploaded PDFs */}
+  <div className="mt-10">
+  <h4 className="text-2xl font-bold mb-6 text-white">Uploaded PDFs</h4>
+
+  <div className="flex flex-col space-y-6">
+    {uploadedFiles?.length === 0 ? (
+      <p className="text-dark-300">No files uploaded.</p>
+    ) : (
+      uploadedFiles.map((data, i) => {
+        const req = metaData.find((doc) => doc.file === data.filename);
+        return (
+          <div
+            key={i}
+            className="bg-black border border-gray-700 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-2xl"
+          >
+            <h6 className="text-white font-mono text-lg mb-2">
+              Title: <span className="text-gray-300">{data.title}</span>
+            </h6>
+
+            <h6 className="text-gray-400 mb-1">
+              Author: <span className="text-gray-200">{req?.Author || "Error"}</span>
+            </h6>
+
+            <h6 className="text-gray-400 mb-1">
+              Status:{" "}
+              <span className="text-white">
+                {req ? (req.responseMessage || req.status) : "Error"}
+              </span>
+            </h6>
+
+            <h6 className="text-gray-400 mb-1">
+              Updated At:{" "}
+              <span className="text-gray-200">
+                {req?.updatedAt
+                  ? new Date(req.updatedAt.seconds * 1000).toLocaleString()
+                  : "Null"}
+              </span>
+            </h6>
+
+            <h6 className="text-gray-400 mb-1">
+              Created At:{" "}
+              <span className="text-gray-200">
+                {req?.createdAt
+                  ? new Date(req.createdAt.seconds * 1000).toLocaleString()
+                  : "Null"}
+              </span>
+            </h6>
+
+            {req?.feedback && (
+              <>
+                <h6 className="text-gray-400 mb-1">
+                  Feedback: <span className="text-gray-200">{req.feedback}</span>
+                </h6>
+                <h6 className="text-gray-400 mb-2">
+                  Given by: <span className="text-gray-200">{req.currentApprover}</span>
+                </h6>
+              </>
+            )}
+
+            <button
+              className="w-full mt-3 bg-white text-black font-semibold py-2 rounded-md hover:bg-gray-300 transition duration-200"
+              onClick={() => toggleFileViewer(data.id)}
+            >
+              {showFileViewer[data.id] ? "Hide PDF" : "Show PDF"}
+            </button>
+
+            {showFileViewer[data.id] && (
+              <div className="mt-4">
+                <FileViewer file={data} />
+              </div>
+            )}
+          </div>
+        );
+      })
+    )}
+  </div>
+</div>
+
+</div>
+
   );
 };
 

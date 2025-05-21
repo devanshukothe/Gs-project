@@ -18,7 +18,7 @@ const Home = () => {
 }
   return (
     <>
-    <Navbar />
+   
     <div className="min-h-screen bg-white text-black px-6 py-10">
       <div className="max-w-6xl mx-auto text-center">
         <h1 className="text-4xl font-bold mb-4">Welcome to the SGGS-PermitFlow Dashboard</h1>

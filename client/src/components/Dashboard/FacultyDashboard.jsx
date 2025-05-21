@@ -61,9 +61,7 @@ const FacultyDashboard = () => {
           fileUrl: URL.createObjectURL(
             new Blob(
               [Uint8Array.from(atob(file.fileContent), (c) => c.charCodeAt(0))],
-              {
-                type: file.contentType,
-              }
+              { type: file.contentType }
             )
           ),
         }));
@@ -81,21 +79,18 @@ const FacultyDashboard = () => {
             collection(db, "Requests"),
             where("currentApprover", "==", logData.name)
           );
-          const unsubscribePending = onSnapshot(
-            pendingQuery,
-            async (snapshot) => {
-              const fetchedPending = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-              }));
-              const names = fetchedPending.map((req) => req.file);
-              const pdfs = await fetchUploadedFiles(names);
-              setRequests((prev) => ({
-                ...prev,
-                pending: { req: fetchedPending, pdf: pdfs },
-              }));
-            }
-          );
+          const unsubscribePending = onSnapshot(pendingQuery, async (snapshot) => {
+            const fetchedPending = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            const names = fetchedPending.map((req) => req.file);
+            const pdfs = await fetchUploadedFiles(names);
+            setRequests((prev) => ({
+              ...prev,
+              pending: { req: fetchedPending, pdf: pdfs },
+            }));
+          });
 
           const forwardedSnapshot = await getDocs(
             collection(db, "Faculty", logData.email, "approveRequests")
@@ -147,19 +142,14 @@ const FacultyDashboard = () => {
   const handleRequest = async (requestId, action) => {
     try {
       const requestRef = doc(db, "Requests", requestId);
-      const nextApprover = requests.pending.req.find(
-        (req) => req.id === requestId
-      )?.secretary;
-      const status =
-        action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
+      const nextApprover = requests.pending.req.find((req) => req.id === requestId)?.secretary;
+      const status = action === "approve" ? "Approved by Faculty" : "Rejected by Faculty";
       const responseMessage =
         action === "approve"
           ? `Approved and forwarded to ${
-              nextApprover === "Not Applied"
-                ? "General Secretary"
-                : nextApprover
+              nextApprover === "Not Applied" ? "General Secretary" : nextApprover
             }.`
-          : `Rejecte by ${logData.role}`;
+          : `Rejected by ${logData.role}`;
 
       await updateDoc(requestRef, {
         status,
@@ -174,13 +164,10 @@ const FacultyDashboard = () => {
         updatedAt: Timestamp.now(),
       });
 
-      await addDoc(
-        collection(db, "Faculty", logData.email, `${action}Requests`),
-        {
-          requestId,
-          Date: Timestamp.now(),
-        }
-      );
+      await addDoc(collection(db, "Faculty", logData.email, `${action}Requests`), {
+        requestId,
+        Date: Timestamp.now(),
+      });
 
       alert(`Request ${action === "approve" ? "approved" : "rejected"}.`);
       setFeedback("");
@@ -190,58 +177,63 @@ const FacultyDashboard = () => {
   };
 
   const renderRequests = (requests, type) => {
-    if (!requests.req.length) return <p>No requests {type}.</p>;
+    if (!requests.req.length) return <p className="text-gray-500">No requests {type}.</p>;
 
     return (
-      <ul className="list-group">
+      <ul className="space-y-4">
         {requests.req.map((r, i) => {
           const pdfFile = requests?.pdf?.find((p) => p.filename === r.file);
           return (
-            <li key={i} className="list-group-item">
+            <li
+              key={i}
+              className="border border-black rounded-xl p-4 shadow-sm bg-white text-black"
+            >
               <p>
-                <strong>Request Subject:</strong> {r.title || "Error"}
+                <span className="font-semibold">Request Subject:</span> {r.title || "Error"}
               </p>
               <p>
-                <strong>Request Author:</strong> {r.Author || "Error"}
+                <span className="font-semibold">Request Author:</span> {r.Author || "Error"}
               </p>
               <p>
-                <strong>File:</strong>{" "}
+                <span className="font-semibold">File:</span>{" "}
                 {pdfFile ? (
                   <button
-                    className="btn btn-primary"
+                    className="text-white bg-black px-3 py-1 rounded hover:opacity-90"
                     onClick={() => showPdf(pdfFile.fileUrl)}
                   >
-                    View Pdf
+                    View PDF
                   </button>
                 ) : (
                   "No file available"
                 )}
               </p>
               <p>
-                <strong>Status:</strong> {r.status || "Error"}
+                <span className="font-semibold">Status:</span> {r.status || "Error"}
               </p>
 
               {type === "pending" && (
-                <>
+                <div className="mt-2">
                   <textarea
-                    className="form-control my-2"
+                    className="w-full p-2 border border-black rounded my-2"
                     placeholder="Enter feedback"
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
                   />
-                  <button
-                    onClick={() => handleRequest(r.id, "approve")}
-                    className="btn btn-success mx-2"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleRequest(r.id, "reject")}
-                    className="btn btn-danger mx-2"
-                  >
-                    Reject
-                  </button>
-                </>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleRequest(r.id, "approve")}
+                      className="bg-green-700 text-white px-4 py-1 rounded hover:bg-green-800"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRequest(r.id, "reject")}
+                      className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
               )}
             </li>
           );
@@ -251,19 +243,21 @@ const FacultyDashboard = () => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="class=" col py-3>
-        <h2 className="my-4">Faculty Dashboard</h2>
+    <div className="bg-white min-h-screen px-6 py-8">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-3xl font-bold text-black mb-8">Faculty Dashboard</h2>
 
-        <section>
-          <h3>Pending Requests</h3>
+        <section className="mb-10">
+          <h3 className="text-2xl font-semibold mb-4">Pending Requests</h3>
           {renderRequests(requests.pending, "pending")}
         </section>
-        <section>
+
+        <section className="mb-10">
           <ApprovedRequests />
         </section>
+
         <section>
-          <h3>Requests Rejected</h3>
+          <h3 className="text-2xl font-semibold mb-4">Requests Rejected</h3>
           {renderRequests(requests.rejected, "rejected")}
         </section>
       </div>

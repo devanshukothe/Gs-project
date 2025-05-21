@@ -21,6 +21,7 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b shadow-sm text-black px-3 py-2 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
+  
         <Link to="/" className="text-2xl font-bold">SGGS-PermitFlow</Link>
 
         {/* Desktop Nav */}
@@ -48,9 +49,7 @@ export default function Navbar() {
       {menuOpen && (
         <ul className="md:hidden mt-4 space-y-4 text-center list-none">
           <NavItem to="/" label="Home" onClick={() => setMenuOpen(false)} />
-          <NavItem to="/student" label="student" onClick={() => setMenuOpen(false)} />
-          <NavItem to="/documents" label="Documents" onClick={() => setMenuOpen(false)} />
-          <NavItem to="/feedback" label="Feedback" onClick={() => setMenuOpen(false)} />
+          <NavItem to="/student" label="Request" onClick={() => setMenuOpen(false)} />
           <NavItem to="/profile" label="Profile" onClick={() => setMenuOpen(false)} />
           <li>
             <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 w-full max-w-xs mx-auto">
