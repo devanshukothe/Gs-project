@@ -13,7 +13,7 @@
             "headers": [
                 {
                     "key": "Access-Control-Allow-Origin",
-                    "value": "https://park-me-client.vercel.app"
+                    "value": "https://sggspermitflow.vercel.app/"
                 },
                 {
                     "key": "Access-Control-Allow-Methods",
