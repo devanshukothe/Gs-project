@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { Mail, Lock, UserCircle2, LogIn } from "lucide-react";
+=======
+import { Mail, Lock, UserCircle2, ArrowRight } from "lucide-react";
+
+>>>>>>> 6133062e0767e0fb7ab30a9ba1ce5c244ee88ff9
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
