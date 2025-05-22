@@ -54,7 +54,7 @@ const SecretaryDashboard = () => {
 
   const fetchUploadedFiles = async (names) => {
     try {
-      const result = await fetch(`http://localhost:5000/get-files`, {
+      const result = await fetch(`https://gs-project-1.onrender.com/get-files`, {
         method: "POST",
         body: JSON.stringify({ names }),
         headers: { "Content-Type": "application/json" },

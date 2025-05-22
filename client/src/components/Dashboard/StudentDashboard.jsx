@@ -51,7 +51,7 @@ const StudentDashboard = () => {
         formData.append("file", file);
 
         const uploadResponse = await axios.post(
-          "http://localhost:5000/upload-files",
+          "https://gs-project-1.onrender.com/upload-files",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -102,7 +102,7 @@ const StudentDashboard = () => {
 
   const fetchUploadedFiles = async () => {
     try {
-      const result = await axios.post("http://localhost:5000/get-files");
+      const result = await axios.post("https://gs-project-1.onrender.com/get-files");
       if (result.data?.files) {
         const files = result.data.files.map((file) => ({
           ...file,

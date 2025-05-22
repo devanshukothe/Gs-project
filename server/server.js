@@ -17,7 +17,7 @@ mongoose
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://sggspermitflow.vercel.app",
     methods: ["GET", "PUT", "POST", "DELETE"],
     credentials: true,
   })
