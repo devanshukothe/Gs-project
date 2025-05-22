@@ -3,6 +3,7 @@ import { auth, db } from "../firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Logout from "../components/Auth/Logout";
+import { Mail, User, ShieldCheck, GraduationCap } from "lucide-react"; // Lucide icons
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,53 +51,49 @@ const Profile = () => {
   if (!userData) return <div className="p-6 text-center">No user found. Please log in again.</div>;
 
   return (
- <div
-  className="max-w-md mx-auto mt-10 p-6 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300
-    text-gray-900 rounded-xl shadow-md border border-gray-300
-    hover:shadow-xl hover:ring-2 hover:ring-gray-400 transition duration-300
-    opacity-0 animate-fadeIn opacity-100"
+
+
+<div
+  className="max-w-md mx-auto mt-10 p-6 rounded-xl border border-gray-300
+    bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300
+    shadow-md hover:shadow-xl hover:border-gray-400 transition-all duration-300"
 >
   {/* Heading */}
-  <h2 className="text-2xl font-serif font-bold mb-6 text-center">
+  <h2 className="text-3xl font-serif font-bold text-center text-gray-800 mb-6">
     Welcome, {userData.name}
   </h2>
 
-  <div className="space-y-4">
-    <p className="border-b border-gray-300 pb-2 flex items-center gap-2">
-      {/* Mail Icon */}
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V8a2 2 0 00-2-2H3a2 2 0 00-2 2v6a2 2 0 002 2z" />
-      </svg>
-      <span className="font-semibold">Email:</span> {userData.email}
+  <div className="space-y-4 text-[1.05rem] leading-relaxed text-gray-700">
+    <p className="border-b border-gray-300 pb-2 flex items-center gap-3">
+      <Mail className="h-5 w-5 text-gray-600" />
+      <span className="font-medium">Email:</span> {userData.email}
     </p>
 
-    <p className="border-b border-gray-300 pb-2 flex items-center gap-2">
-      {/* User Icon */}
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A9.005 9.005 0 0112 15a9.005 9.005 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <span className="font-semibold">Role:</span> {userData.role}
+    <p className="border-b border-gray-300 pb-2 flex items-center gap-3">
+      <User className="h-5 w-5 text-gray-600" />
+      <span className="font-medium">Role:</span> {userData.role}
     </p>
 
     {role === "Club" && (
       <>
-        <p className="border-b border-gray-300 pb-2 flex items-center gap-2">
-          <span className="font-semibold">Coordinator:</span> {userData.coordinator}
+        <p className="border-b border-gray-300 pb-2 flex items-center gap-3">
+          <ShieldCheck className="h-5 w-5 text-gray-600" />
+          <span className="font-medium">Coordinator:</span> {userData.coordinator}
         </p>
-        <p className="border-b border-gray-300 pb-2 flex items-center gap-2">
-          <span className="font-semibold">Faculty:</span> {userData.faculty}
+        <p className="border-b border-gray-300 pb-2 flex items-center gap-3">
+          <GraduationCap className="h-5 w-5 text-gray-600" />
+          <span className="font-medium">Faculty:</span> {userData.faculty}
         </p>
       </>
     )}
 
-   <div
-  className="pt-4 text-center cursor-pointer hover:scale-105 transition-transform duration-200 inline-block text-gray-900"
->
-  <Logout />
-</div>
-
+    <div className="pt-4 text-center cursor-pointer transition-transform hover:scale-105 duration-200 text-gray-700 font-semibold">
+      <Logout />
+    </div>
   </div>
 </div>
+
+
 
   );
 };

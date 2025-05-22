@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useNavigate } from "react-router-dom";
+import { Mail, Lock, UserCircle2, ArrowRight } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -38,19 +39,32 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h2 className="text-3xl font-bold mb-6 text-center">SGGSIE&T Permissions System</h2>
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 flex items-center gap-2">
+        <UserCircle2 className="w-8 h-8 text-gray-700" />
+        SGGSIE&T Permissions System
+      </h2>
+
+      <div
+          className="bg-grey-900 p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-200
+             transition duration-300 transform hover:scale-[1.03] hover:shadow-2xl hover:bg-gray-100"
+      >
+        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-900 flex items-center justify-center gap-2">
+          {/* <ArrowRight className="w-6 h-6 text-gray-800 rotate-45" /> */}
+          Login
+        </h2>
+
         {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm border border-red-300">
+            {error}
+          </div>
         )}
 
         {role === "" ? (
           <div className="mb-6">
-            <label className="block mb-2 font-medium">Select Role:</label>
+            <label className="block mb-2 font-medium text-gray-700">Select Role:</label>
             <select
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
@@ -68,36 +82,43 @@ const Login = () => {
         ) : (
           <form onSubmit={handleLogin}>
             <div className="mb-4">
-              <label htmlFor="email" className="block mb-1 font-medium">
+              <label htmlFor="email" className="block mb-1 font-medium text-gray-700">
                 Email:
               </label>
-              <input
-                type="email"
-                id="email"
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 focus-within:ring-2 focus-within:ring-black">
+                <Mail className="text-gray-500 mr-2 w-5 h-5" />
+                <input
+                  type="email"
+                  id="email"
+                  className="w-full outline-none"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
             <div className="mb-6">
-              <label htmlFor="password" className="block mb-1 font-medium">
+              <label htmlFor="password" className="block mb-1 font-medium text-gray-700">
                 Password:
               </label>
-              <input
-                type="password"
-                id="password"
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 focus-within:ring-2 focus-within:ring-black">
+                <Lock className="text-gray-500 mr-2 w-5 h-5" />
+                <input
+                  type="password"
+                  id="password"
+                  className="w-full outline-none"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
+              className="w-full bg-gray-900 text-white py-2 rounded-lg transition duration-200
+                         hover:bg-gray-800 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}

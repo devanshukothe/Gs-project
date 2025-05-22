@@ -107,127 +107,87 @@ const Register = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      <h2 className="text-3xl font-bold text-center mb-6">SGGSIE&T Permissions System</h2>
+   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-10">
+  <h2 className="text-4xl font-bold text-center mb-8 text-gray-800">SGGSIE&T Permissions System</h2>
 
-      {!role && (
-        <div className="mb-6">
-          <select
-            className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-black"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="">Select Role</option>
-            <option value="IC">Institute Club</option>
-            <option value="DC">Departmental Club</option>
-            <option value="Faculty">Faculty Coordinator</option>
-            <option value="Dean">Dean of Student Activities</option>
-            <option value="GS">General Secretary</option>
-            <option value="TS">Technical Secretary</option>
-            <option value="SS">Sports Secretary</option>
-            <option value="CS">Cultural Secretary</option>
-          </select>
-        </div>
-      )}
-
-      {role && (
-        <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
-          <h3 className="text-xl font-semibold text-center mb-6">Register as {role}</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {(role === "IC" || role === "DC") ? (
-              <>
-                <InputField
-                  label="Email"
-                  type="email"
-                  name="email"
-                  value={clubDetails.email}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Password"
-                  type="password"
-                  name="password"
-                  value={clubDetails.password}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Club Name"
-                  type="text"
-                  name="name"
-                  value={clubDetails.name}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Club Coordinator"
-                  type="text"
-                  name="coordinator"
-                  value={clubDetails.coordinator}
-                  onChange={handleChange}
-                />
-                <div>
-                  <label className="block text-sm font-medium mb-1">Faculty</label>
-                  <select
-                    name="faculty"
-                    value={clubDetails.faculty}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-black"
-                  >
-                    <option value="">Select</option>
-                    {facultyList.map((faculty, index) => (
-                      <option key={index} value={faculty.name}>
-                        {faculty.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            ) : (
-              <>
-                <InputField
-                  label="Email"
-                  type="email"
-                  name="email"
-                  value={otherDetails.email}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Password"
-                  type="password"
-                  name="password"
-                  value={otherDetails.password}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Name"
-                  type="text"
-                  name="name"
-                  value={otherDetails.name}
-                  onChange={handleChange}
-                />
-              </>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-      )}
+  {!role && (
+    <div className="mb-6 w-full max-w-sm">
+      <select
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-800"
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+      >
+        <option value="">Select Role</option>
+        <option value="IC">Institute Club</option>
+        <option value="DC">Departmental Club</option>
+        <option value="Faculty">Faculty Coordinator</option>
+        <option value="Dean">Dean of Student Activities</option>
+        <option value="GS">General Secretary</option>
+        <option value="TS">Technical Secretary</option>
+        <option value="SS">Sports Secretary</option>
+        <option value="CS">Cultural Secretary</option>
+      </select>
     </div>
+  )}
+
+  {role && (
+    <div className="w-full max-w-md bg-gray-200 p-8 rounded-2xl shadow-lg border border-gray-300">
+      <h3 className="text-2xl font-semibold text-gray-800 text-center mb-6">Register as {role}</h3>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {(role === "IC" || role === "DC") ? (
+          <>
+            <InputField label="Email" type="email" name="email" value={clubDetails.email} onChange={handleChange} />
+            <InputField label="Password" type="password" name="password" value={clubDetails.password} onChange={handleChange} />
+            <InputField label="Club Name" type="text" name="name" value={clubDetails.name} onChange={handleChange} />
+            <InputField label="Club Coordinator" type="text" name="coordinator" value={clubDetails.coordinator} onChange={handleChange} />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Faculty</label>
+              <select
+                name="faculty"
+                value={clubDetails.faculty}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-800"
+              >
+                <option value="">Select</option>
+                {facultyList.map((faculty, index) => (
+                  <option key={index} value={faculty.name}>{faculty.name}</option>
+                ))}
+              </select>
+            </div>
+          </>
+        ) : (
+          <>
+            <InputField label="Email" type="email" name="email" value={otherDetails.email} onChange={handleChange} />
+            <InputField label="Password" type="password" name="password" value={otherDetails.password} onChange={handleChange} />
+            <InputField label="Name" type="text" name="name" value={otherDetails.name} onChange={handleChange} />
+          </>
+        )}
+        <button
+          type="submit"
+          className="w-full bg-gray-800 text-white py-2.5 rounded-lg font-semibold hover:bg-gray-700 transition duration-200"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+  )}
+</div>
+
   );
 };
 
 const InputField = ({ label, ...props }) => (
   <div>
-    <label className="block text-sm font-medium mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input
       {...props}
-      className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800"
       required
     />
   </div>
 );
+
+
 
 export default Register;
