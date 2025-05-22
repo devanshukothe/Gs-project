@@ -56,7 +56,7 @@ export default function Navbar() {
                {user ? (
         <p>Welcome, {user.email}</p>
       ) : (
-        <p>Login</p>
+         <NavItem to="/login" label="login" onClick={() => setMenuOpen(false)} />
       )}
             </button>
           </li>
