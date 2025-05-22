@@ -256,17 +256,17 @@ const DeanDashboard = () => {
 
       <div className="space-y-10">
         <section>
-          <h2 className="text-2xl font-semibold mb-4">🕒 Pending Requests</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-center">🕒 Pending Requests</h2>
           {renderRequests(requests.pending, "pending")}
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold mb-4">✅ Approved Requests</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-center">✅ Approved Requests</h2>
           {renderRequests(requests.approved, "approved")}
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold mb-4">❌ Rejected Requests</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-center">❌ Rejected Requests</h2>
           {renderRequests(requests.rejected, "rejected")}
         </section>
       </div>

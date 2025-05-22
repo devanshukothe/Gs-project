@@ -54,8 +54,7 @@ const Profile = () => {
   className="max-w-md mx-auto mt-10 p-6 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300
     text-gray-900 rounded-xl shadow-md border border-gray-300
     hover:shadow-xl hover:ring-2 hover:ring-gray-400 transition duration-300
-    opacity-0 animate-fadeIn opacity-100"
->
+     animate-fadeIn opacity-100">
   {/* Heading */}
   <h2 className="text-2xl font-serif font-bold mb-6 text-center">
     Welcome, {userData.name}

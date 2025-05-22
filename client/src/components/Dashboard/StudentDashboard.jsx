@@ -76,8 +76,8 @@ const StudentDashboard = () => {
               : sequence.GS,
           createdAt: Timestamp.now(),
         });
-
-        setSequence({
+       
+        setSequence({ 
           faculty: "",
           secratory: "",
           GS: "generalsecretary@sggs.ac.in",
@@ -331,6 +331,7 @@ const StudentDashboard = () => {
         const req = metaData.find((doc) => doc.file === data.filename);
         return (
           <div
+
             key={i}
             className="bg-black border border-gray-700 rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-2xl"
           >
