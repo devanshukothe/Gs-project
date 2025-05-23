@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  sendEmailVerification,
+} from "firebase/auth";
 import { auth, db, provider } from "../../firebase/firebase";
 import { setDoc, doc, getDocs, getDoc, collection } from "firebase/firestore";
 import { FcGoogle } from "react-icons/fc";
@@ -66,6 +70,12 @@ const Register = () => {
       );
       const user = userCredential.user;
 
+      // Send email verification
+      await sendEmailVerification(user);
+      alert(
+        "Verification email sent! Please check your email inbox and verify your account before logging in."
+      );
+
       const collectionName =
         role === "IC" || role === "DC"
           ? "Club"
@@ -114,6 +124,14 @@ const Register = () => {
         return;
       }
 
+      // For Google sign-in, email is already verified by Google, but you can still send verification if you want:
+      if (!user.emailVerified) {
+        await sendEmailVerification(user);
+        alert(
+          "Verification email sent! Please check your email inbox and verify your account before logging in."
+        );
+      }
+
       const userData =
         role === "IC" || role === "DC"
           ? {
@@ -152,12 +170,14 @@ const Register = () => {
 
   useEffect(() => {
     async function getFaculty() {
-      const fC = await getDocs(collection(db, "Faculty"));
-      const facultyData = fC.docs.map((doc) => doc.data());
-      setFacultyList(facultyData);
-    }
+          const fC = await getDocs(collection(db, "Faculty"));
+          const facultyData = fC.docs.map((doc) => doc.data());
+          setFacultyList(facultyData);
+        }
+        
     getFaculty();
   }, []);
+  
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-10">
@@ -222,7 +242,7 @@ const Register = () => {
                   value={clubDetails.coordinator}
                   onChange={handleChange}
                 />
-                <div>
+                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Faculty
                   </label>
@@ -274,26 +294,24 @@ const Register = () => {
               Submit
             </button>
 
-            
-              <button
-                type="button"
-                onClick={handleGoogleSignup}
-                disabled={!role}
-                className={` w-full flex items-center justify-center bg-gray-900 text-white border border-gray-300 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition duration-200 ${
-                  !role ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                <FcGoogle size={20} className="mx-2" />
-                Register with Google
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="mt-4 w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-blue-500 transition duration-200 flex items-center justify-center gap-2"
-              >
-                Already have an account? Login
-              </button>
-           
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              disabled={!role}
+              className={` w-full flex items-center justify-center bg-gray-900 text-white border border-gray-300 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition duration-200 ${
+                !role ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <FcGoogle size={20} className="mx-2" />
+              Register with Google
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="mt-4 w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-blue-500 transition duration-200 flex items-center justify-center gap-2"
+            >
+              Already have an account? Login
+            </button>
           </form>
         </div>
       )}
