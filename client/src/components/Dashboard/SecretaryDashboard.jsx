@@ -54,11 +54,15 @@ const SecretaryDashboard = () => {
 
   const fetchUploadedFiles = async (names) => {
     try {
+      const validNames = names.filter(Boolean); // Filter out null/undefined/empty
+      if (!validNames.length) return [];
+
       const result = await fetch(`https://gs-project-1.onrender.com/get-files`, {
         method: "POST",
-        body: JSON.stringify({ names }),
+        body: JSON.stringify({ names: validNames }),
         headers: { "Content-Type": "application/json" },
       });
+
       const response = await result.json();
       if (response.status === "ok") {
         return response.files.map((file) => ({
@@ -71,6 +75,7 @@ const SecretaryDashboard = () => {
           ),
         }));
       }
+      return [];
     } catch (err) {
       console.error("Error fetching files:", err);
       return [];
@@ -92,6 +97,7 @@ const SecretaryDashboard = () => {
             id: doc.id,
             ...doc.data(),
           }));
+
           const pdfs = await fetchUploadedFiles(pendingReqs.map((r) => r.file || ""));
           const pending = { req: pendingReqs, pdf: pdfs };
 
@@ -141,6 +147,8 @@ const SecretaryDashboard = () => {
     try {
       const requestRef = doc(db, "Requests", requestId);
       const request = requests.pending.req.find((r) => r.id === requestId);
+      if (!request) throw new Error("Request not found");
+
       const next =
         logData.role === "General Secretary" ? request.dean : "General Secretary";
       const status =
@@ -180,57 +188,56 @@ const SecretaryDashboard = () => {
   };
 
   const RequestCard = ({ r, pdfFile, type }) => {
-  if (!r) return null;
+    if (!r) return null;
 
-  return (
-    <div className="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition">
-      <p className="font-bold mb-1">Subject: {r.title || "N/A"}</p>
-      <p className="mb-1">Author: {r.Author || "N/A"}</p>
-      <p className="mb-2">Status: {r.status || "N/A"}</p>
+    return (
+      <div className="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition">
+        <p className="font-bold mb-1">Subject: {r.title || "N/A"}</p>
+        <p className="mb-1">Author: {r.Author || "N/A"}</p>
+        <p className="mb-2">Status: {r.status || "N/A"}</p>
 
-      {pdfFile ? (
-        <button
-          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-          onClick={() => showPdf(pdfFile.fileUrl)}
-        >
-          View PDF
-        </button>
-      ) : (
-        <p className="text-sm text-gray-500">PDF unavailable</p>
-      )}
+        {pdfFile ? (
+          <button
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            onClick={() => showPdf(pdfFile.fileUrl)}
+          >
+            View PDF
+          </button>
+        ) : (
+          <p className="text-sm text-gray-500">PDF unavailable</p>
+        )}
 
-      {type === "pending" && (
-        <>
-          <textarea
-            className="w-full mt-3 p-2 border rounded"
-            placeholder="Provide feedback..."
-            value={feedback[r.id] || ""}
-            onChange={(e) =>
-              setFeedback((prev) => ({ ...prev, [r.id]: e.target.value }))
-            }
-          />
-          <div className="flex gap-2 mt-3">
-            <button
-              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-              onClick={() => handleRequest(r.id, "approve")}
-              disabled={loadingIds.includes(r.id)}
-            >
-              Approve
-            </button>
-            <button
-              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-              onClick={() => handleRequest(r.id, "reject")}
-              disabled={loadingIds.includes(r.id)}
-            >
-              Reject
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
+        {type === "pending" && (
+          <>
+            <textarea
+              className="w-full mt-3 p-2 border rounded"
+              placeholder="Provide feedback..."
+              value={feedback[r.id] || ""}
+              onChange={(e) =>
+                setFeedback((prev) => ({ ...prev, [r.id]: e.target.value }))
+              }
+            />
+            <div className="flex gap-2 mt-3">
+              <button
+                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                onClick={() => handleRequest(r.id, "approve")}
+                disabled={loadingIds.includes(r.id)}
+              >
+                Approve
+              </button>
+              <button
+                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                onClick={() => handleRequest(r.id, "reject")}
+                disabled={loadingIds.includes(r.id)}
+              >
+                Reject
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
   const renderRequests = (data, type) =>
     data.req.length === 0 ? (
@@ -238,7 +245,8 @@ const SecretaryDashboard = () => {
     ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {data.req.map((r, i) => {
-          const pdfFile = data.pdf.find((p) => p.filename === r.file);
+          if (!r || !r.file) return null; // Avoid undefined errors
+          const pdfFile = data.pdf.find((p) => p?.filename === r.file);
           return <RequestCard key={i} r={r} pdfFile={pdfFile} type={type} />;
         })}
       </div>
@@ -260,23 +268,17 @@ const SecretaryDashboard = () => {
         </h2>
 
         <section className="mb-12">
-          <h3 className="text-2xl font-semibold mb-6 text-gray-800 border-b pb-2 border-gray-300">
-            Pending Requests
-          </h3>
+          <h3 className="text-xl font-semibold mb-4">Pending Requests</h3>
           {renderRequests(requests.pending, "pending")}
         </section>
 
         <section className="mb-12">
-          <h3 className="text-2xl font-semibold mb-6 text-gray-800 border-b pb-2 border-gray-300">
-            Requests Forwarded
-          </h3>
+          <h3 className="text-xl font-semibold mb-4">Forwarded Requests</h3>
           {renderRequests(requests.forwarded, "forwarded")}
         </section>
 
         <section>
-          <h3 className="text-2xl font-semibold mb-6 text-gray-800 border-b pb-2 border-gray-300">
-            Requests Rejected
-          </h3>
+          <h3 className="text-xl font-semibold mb-4">Rejected Requests</h3>
           {renderRequests(requests.rejected, "rejected")}
         </section>
       </div>
