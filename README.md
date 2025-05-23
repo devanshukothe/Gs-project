@@ -12,8 +12,8 @@ SGGS Permit Flow is a centralized web portal designed for students and faculty o
 📁 PDF upload and digital proof verification
 
 🔐 College-email authentication (@sggs.ac.in)
-
-✨ Features
+---
+##✨ Features
 🔄 Live Status Tracking – Students can track the real-time status of their applications.
 
 📝 Smart Feedback System – Faculty/Secretaries can approve/reject with remarks.
@@ -25,7 +25,7 @@ SGGS Permit Flow is a centralized web portal designed for students and faculty o
 📬 Email Notifications – Alerts on status change or required action.
 
 📊 Dashboard for Role-Based Access – Secretary, Faculty & Student panels.
-
+ ---
 🛠️ Tech Stack
 Layer	Technology
 Frontend	React.js, Tailwind CSS
@@ -40,7 +40,7 @@ bash
 Copy
 Edit
 # Clone the repository
-git clone https://github.com/yourusername/sggs-permit-flow.git
+git clone https://github.com/devanshukothe/sggs-permit-flow.git
 cd sggs-permit-flow
 
 # Install dependencies
