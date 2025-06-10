@@ -81,9 +81,8 @@ MIT License. See LICENSE for more information.
 💬 Connect
 Built with ❤️ by SGGS Developers
 
-📧 Email: gensec@sggs.ac.in
+📧 Email: 2022bcs073@sggs.ac.in
 
 🌐 Website: sggs.ac.in
 
-💬 Instagram: @sggs_life
 
